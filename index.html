@@ -28,7 +28,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
 .ibtn.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
 .ibtn.primary{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:700}
 .mtitle{font-size:18px;font-weight:700;min-width:110px;text-align:center}
-.legend{margin-left:auto;display:grid;grid-template-columns:auto auto;gap:3px 14px;font-size:11.5px;color:var(--ink2)}
+.legend{margin-left:auto;display:flex;flex-wrap:wrap;gap:3px 14px;font-size:11.5px;color:var(--ink2)}
 .legend span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 .legend i{width:13px;height:13px;border-radius:3px;display:inline-block;flex-shrink:0}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
@@ -76,8 +76,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
 .rowT{background:#FBFAF7;border-bottom:1px solid var(--line2)}
 .rowT>div{padding:6px 5px;display:flex;flex-direction:column;gap:4px;min-height:36px}
 .tcard{display:flex;flex-direction:column;gap:2px;padding:6px 8px;background:#FFF6E3;border:1px solid #E7B15A;border-radius:6px;cursor:pointer;font-size:11px}
-.tcard.g2trip,.tcard.g2meet{border-color:var(--g2t);background:#EAF4F2}
-.tcard.g3trip,.tcard.g3meet{border-color:var(--g3t);background:#FBEFE6}
+.rowS .tcard{margin:0 3px;justify-content:center}
 .tcard b{font-size:11.5px}
 .tcard .m{color:var(--ink2);display:flex;gap:6px;flex-wrap:wrap}
 .tcard .term{font-weight:700;color:var(--vpc)}
@@ -112,7 +111,6 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
 .rowN{border-top:1px solid var(--line);background:#FBFAF7}
 .rowN>div{padding:5px;min-height:38px}
 .rowN .note{min-height:28px;padding:4px 6px;border-radius:4px;font-size:11.5px;outline:none;line-height:1.4}
-.rowN .note:empty:before{content:"더블클릭 입력";color:#B5B8BD}
 .rowN .note:focus{background:#fff;box-shadow:0 0 0 2px var(--teal2)}
 /* ---------- 전체일정 목록 ---------- */
 .list{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:auto}
@@ -166,7 +164,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
   .brand small{display:none}
   .mtitle{font-size:15.5px;min-width:92px}
   .ibtn{height:32px;padding:0 9px;font-size:12px}
-  .legend{grid-template-columns:auto auto;gap:2px 10px;font-size:10.5px;margin-left:0;width:100%}
+  .legend{gap:2px 10px;font-size:10.5px;margin-left:0;width:100%}
   .week{font-size:10px;min-height:66px;grid-auto-rows:18px}
   .ev{padding:0 3px;line-height:17px;margin:0 1px;border-radius:3px}
   .ev.g2event,.ev.g3event{line-height:16px}
@@ -424,34 +422,52 @@ function renderWeek(ws){
   const dn=['\uc77c','\uc6d4','\ud654','\uc218','\ubaa9','\uae08','\ud1a0'];
   const d0=days[0],dl=days[nd-1];
   const holOf=d=>DB.events.find(e=>e.type==='holiday'&&e.start<=d&&e.end>=d);
+  const inWeek=e=>e.allDay!==false&&e.start<=dl&&e.end>=d0;
+  function packRow(items){
+    const occ=[];
+    items.forEach(it=>{
+      let li=0;
+      for(;;li++){
+        let ok=true;
+        for(let k=0;k<it.h;k++){const l=occ[li+k]||[];if(!l.every(r=>it.ei<r.s||it.si>r.e)){ok=false;break}}
+        if(ok)break;
+      }
+      for(let k=0;k<it.h;k++){(occ[li+k]=occ[li+k]||[]).push({s:it.si,e:it.ei})}
+      it.li=li;
+    });
+    return Math.max(1,occ.length);
+  }
+  function clip(e){
+    const cs=e.start<d0?d0:e.start, ce=e.end>dl?dl:e.end;
+    return {si:days.indexOf(cs),ei:days.indexOf(ce)};
+  }
+  function rowHtml(label,items){
+    const nl=packRow(items);
+    let r='<div class="rowS"><div class="lab" style="grid-row:1/'+(nl+1)+'">'+label+'</div>';
+    items.forEach(it=>{
+      const e=it.e,t=e.travel||{};
+      if(it.card){
+        r+='<div class="tcard" style="grid-column:'+(it.si+2)+'/'+(it.ei+3)+';grid-row:'+(it.li+1)+'/'+(it.li+3)+'" onclick="openEvent(\''+e.id+'\')"><b>\u2708 '+esc(t.from||t.to?((t.from||'?')+' \u2192 '+(t.to||'?')):e.title)+'</b><div class="m">'+(t.mode?'<span>'+esc(t.mode)+'</span>':'')+(t.no?'<span>'+esc(t.no)+'</span>':'<span style="color:#B5B8BD">[\ud3b8\uba85 \uc785\ub825]</span>')+(t.fromTime?'<span>\ucd9c\ubc1c '+hhmm(t.fromTime)+'</span>':'')+(t.toTime?'<span>\ub3c4\ucc29 '+hhmm(t.toTime)+'</span>':'')+(t.terminal?'<span class="term">'+esc(t.terminal)+'</span>':'')+((e.attachments||[]).length?'<span>\ud83d\udcce</span>':'')+'</div></div>';
+      }else{
+        r+='<div class="ev '+e.type+'" style="grid-column:'+(it.si+2)+'/'+(it.ei+3)+';grid-row:'+(it.li+1)+'" onclick="openEvent(\''+e.id+'\')" title="'+esc(TYPE_NAME[e.type]+' \u00b7 '+e.title)+'">'+(e.vp?'<span class="m">\u2605</span>':'')+esc(e.title)+'</div>';
+      }
+    });
+    return r+'</div>';
+  }
+  // \ucd9c\uc7a5 \ud589: \ucd9c\uc7a5(G2/G3)\uacfc \uc774\ub3d9\ub9cc / \ud589\uc0ac \ud589: G2\u00b7G3 \ud589\uc0ac
+  const tripItems=[],evtItems=[];
+  DB.events.filter(e=>visible(e)&&inWeek(e)&&e.type!=='holiday')
+    .sort((a,b)=>(isTravel(b)?1:0)-(isTravel(a)?1:0)||PRI[a.type]-PRI[b.type]||(a.start<b.start?-1:a.start>b.start?1:(b.end>a.end?1:-1)))
+    .forEach(e=>{
+      const c=clip(e);if(c.si<0||c.ei<0)return;
+      if(e.type==='g2event'||e.type==='g3event'){evtItems.push({e,si:c.si,ei:c.ei,h:1,card:false});return}
+      const card=isTravel(e);
+      tripItems.push({e,si:c.si,ei:c.ei,h:card?2:1,card});
+    });
   let h='<div class="wk" onclick="event.stopPropagation()"><div class="head"><span class="h">\uc8fc\uac04 \u00b7 '+d0.slice(5).replace('-','.')+'('+dn[pd(d0).getDay()]+') ~ '+dl.slice(5).replace('-','.')+'('+dn[pd(dl).getDay()]+')</span><span style="font-size:11px;color:var(--mute)">\ube48 \uc2dc\uac04\uce78 \ud074\ub9ad \u2192 \ud68c\uc758 \uc785\ub825</span><span class="r"><button class="ibtn" onclick="moveWeek(-1)">\u25c0 \uc774\uc804 \uc8fc</button><button class="ibtn" onclick="moveWeek(1)">\ub2e4\uc74c \uc8fc \u25b6</button><button class="ibtn" onclick="exportWeekImage()">\uc774\ubbf8\uc9c0</button><button class="ibtn" onclick="selWeek=null;renderMonth()">\ub2eb\uae30 \u00d7</button></span></div>';
   h+='<div class="wkwrap"><div class="wkin" style="--nd:'+nd+';--nr:'+nr+'">';
-  // \ucd9c\uc7a5\u00b7\uc774\ub3d9: \uc885\uc77c \uc77c\uc815\uc744 \uc8fc \uc804\uccb4\uc5d0 \uac78\uce58\ub294 \ud558\ub098\uc758 \ub9c9\ub300\ub85c
-  const span=DB.events.filter(e=>visible(e)&&e.allDay!==false&&e.start<=dl&&e.end>=d0)
-    .sort((a,b)=>PRI[a.type]-PRI[b.type]||(a.start<b.start?-1:a.start>b.start?1:(b.end>a.end?1:-1)));
-  const bars=[];const lanes=[];
-  span.forEach(e=>{
-    const cs=e.start<d0?d0:e.start, ce=e.end>dl?dl:e.end;
-    const si=days.indexOf(cs), ei=days.indexOf(ce);
-    if(si<0||ei<0)return;
-    let li=lanes.findIndex(l=>l.every(r=>ei<r.s||si>r.e));
-    if(li<0){lanes.push([]);li=lanes.length-1}
-    lanes[li].push({s:si,e:ei});
-    bars.push({e,si,ei,li});
-  });
-  const nl=Math.max(1,lanes.length);
-  h+='<div class="rowS"><div class="lab" style="grid-row:1/'+(nl+1)+'">\ucd9c\uc7a5<br>\u00b7\uc774\ub3d9</div>';
-  bars.forEach(b=>{
-    const e=b.e,t=e.travel||{};
-    let txt;
-    if(isTravel(e)){
-      txt='\u2708 '+esc(t.from||t.to?((t.from||'?')+' \u2192 '+(t.to||'?')):e.title)+' \u00b7 '+(t.no?esc(t.no):'[\ud3b8\uba85]')+(t.fromTime?' \u00b7 \ucd9c\ubc1c '+hhmm(t.fromTime):'')+(t.toTime?' \u00b7 \ub3c4\ucc29 '+hhmm(t.toTime):'')+(t.terminal?' \u00b7 '+esc(t.terminal):'')+((e.attachments||[]).length?' \ud83d\udcce':'');
-    }else{
-      txt=(e.vp?'<span class="m">\u2605</span>':'')+esc(e.title);
-    }
-    h+='<div class="ev '+e.type+'" style="grid-column:'+(b.si+2)+'/'+(b.ei+3)+';grid-row:'+(b.li+1)+'" onclick="openEvent(\''+e.id+'\')" title="'+esc(TYPE_NAME[e.type]+' \u00b7 '+e.title)+'">'+txt+'</div>';
-  });
-  h+='</div>';
+  h+=rowHtml('\ucd9c\uc7a5',tripItems);
+  h+=rowHtml('\ud589\uc0ac',evtItems);
   // \uc694\uc77c \ud5e4\ub354 + \ud68c\uc758 \ucd94\uac00 \ubc84\ud2bc
   h+='<div class="wkgrid rowH"><div></div>';
   days.forEach(d=>{const hol=holOf(d);const dd=pd(d);
@@ -460,7 +476,7 @@ function renderWeek(ws){
     else h+='<div><button class="mini g2m" onclick="addMeet(\''+d+'\',\'g2meet\')">\uff0bG2\ud68c\uc758</button><button class="mini g3m" onclick="addMeet(\''+d+'\',\'g3meet\')">\uff0bG3\ud68c\uc758</button></div>';
     h+='</div>'});
   h+='</div>';
-  // \uc2dc\uac04 \uadf8\ub9ac\ub4dc (\uc77c\ubcc4 \ud68c\uc758 \uc785\ub825, \uc2dc\uc791~\uc644\ub8cc \uc140 \ubcd1\ud569)
+  // \uc2dc\uac04 \uadf8\ub9ac\ub4dc
   h+='<div class="timegrid">';
   for(let r=0;r<nr;r++){const hr=H0+Math.floor(r/2),half=r%2;const lab=r===nr-1?'\uc57c\uac04':(half?'':hr+':00');h+='<div class="tl'+((hr===12||hr===18)&&!half?' h':'')+'" style="grid-row:'+(r+1)+'">'+lab+'</div>'}
   days.forEach((d,ci)=>{const hol=holOf(d);
