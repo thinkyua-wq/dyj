@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>G2/G3 일정 · 정대영 부사장님</title>
+<style>
+:root{
+  --bg:#F3F2EE; --card:#FFFFFF; --line:#DAD8D1; --line2:#ECEAE4;
+  --ink:#1B1F26; --ink2:#4A4E55; --mute:#7A7E85; --teal:#0F766E; --teal2:#E3EFEF; --red:#B3261E;
+  --g2t:#0F766E; --g3t:#C2410C; --g2m:#1E40AF; --g3m:#9D174D;
+  --g2eBg:#D9ECE9; --g2eTx:#0B5A54; --g3eBg:#F8E3D0; --g3eTx:#8A4A0B;
+  --hol:#D9D6CE; --vpc:#1F3A5F;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:14px;padding-bottom:env(safe-area-inset-bottom,0px)}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
+.main{max-width:1280px;margin:0 auto;padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+/* ---------- 상단 ---------- */
+.bar{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.brand{font-size:17px;font-weight:700;color:var(--vpc)}
+.brand small{font-weight:400;color:var(--mute);font-size:11px;margin-left:6px}
+.ibtn{height:34px;min-width:34px;padding:0 11px;border:1px solid var(--line);background:#fff;border-radius:8px;font-size:13px;color:var(--ink)}
+.ibtn:hover{background:#F6F5F1}
+.ibtn.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
+.ibtn.primary{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:700}
+.mtitle{font-size:18px;font-weight:700;min-width:110px;text-align:center}
+.legend{margin-left:auto;display:grid;grid-template-columns:auto auto;gap:3px 14px;font-size:11.5px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.legend i{width:13px;height:13px;border-radius:3px;display:inline-block;flex-shrink:0}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.chip{height:31px;padding:0 13px;border-radius:16px;border:1.5px solid;background:#fff;font-size:12.5px;font-weight:600;white-space:nowrap;flex-shrink:0;opacity:.45}
+.chip.on{opacity:1;color:#fff}
+.chip.vp{border-color:var(--vpc);color:var(--vpc)} .chip.vp.on{background:var(--vpc);color:#fff}
+.chip.g2{border-color:var(--g2t);color:var(--g2t)} .chip.g2.on{background:var(--g2t);color:#fff}
+.chip.g3{border-color:var(--g3t);color:var(--g3t)} .chip.g3.on{background:var(--g3t);color:#fff}
+.chip.g2e{border-color:var(--g2eTx);color:var(--g2eTx)} .chip.g2e.on{background:var(--g2eTx);color:#fff}
+.chip.g3e{border-color:var(--g3eTx);color:var(--g3eTx)} .chip.g3e.on{background:var(--g3eTx);color:#fff}
+.stat{font-size:11px;color:var(--mute);margin-left:auto;white-space:nowrap}
+/* ---------- 월간 ---------- */
+.month{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#EEEDE8;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--ink2)}
+.dow div{padding:7px 8px}
+.dow .sun{color:var(--red)} .dow .sat{color:var(--vpc)}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:21px;gap:3px 0;padding:3px 0 6px;border-bottom:1px solid var(--line2);font-size:11.5px;cursor:pointer;min-height:88px;align-content:start}
+.week:hover{background:#FAFAF7}
+.week.sel{background:var(--teal2);box-shadow:inset 4px 0 0 var(--teal)}
+.week .d{padding:0 7px;font-weight:700;display:flex;align-items:center;gap:5px}
+.week .d.out{color:#A3A6AB;font-weight:400}
+.week .d.sun{color:var(--red)} .week .d.sat{color:var(--vpc)}
+.week .d .today{width:21px;height:21px;border-radius:11px;background:var(--teal);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px}
+.week .d .add{margin-left:auto;opacity:0;font-size:14px;color:var(--teal);font-weight:700;padding:0 3px}
+.week .d:hover .add{opacity:1}
+.ev{margin:0 3px;padding:0 6px;border-radius:4px;line-height:20px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;font-size:11.5px}
+.ev.g2trip{background:var(--g2t);color:#fff} .ev.g3trip{background:var(--g3t);color:#fff}
+.ev.g2meet{background:var(--g2m);color:#fff} .ev.g3meet{background:var(--g3m);color:#fff}
+.ev.g2event{background:var(--g2eBg);color:var(--g2eTx);border-left:3px solid var(--g2eTx);line-height:19px}
+.ev.g3event{background:var(--g3eBg);color:var(--g3eTx);border-left:3px solid var(--g3eTx);line-height:19px}
+.ev.holiday{background:var(--hol);color:var(--ink2)}
+.ev .m{font-weight:700;margin-right:3px;opacity:.9}
+/* ---------- 주간 패널 ---------- */
+.wk{background:#fff;border-top:3px solid var(--teal);border-bottom:1px solid var(--line);cursor:default}
+.wk .head{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line2);flex-wrap:wrap}
+.wk .head .h{font-size:14.5px;font-weight:700;color:var(--vpc)}
+.wk .head .r{margin-left:auto;display:flex;gap:5px}
+.wk .head .ibtn{height:30px;font-size:12px}
+.wkwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.wkin{min-width:720px}
+.wkgrid{display:grid;grid-template-columns:56px repeat(var(--nd),minmax(0,1fr));font-size:11.5px}
+.wkgrid>div{border-left:1px solid var(--line2)}
+.wkgrid>div:first-child{border-left:0}
+.wkgrid .lab{padding:6px 7px;color:var(--mute);font-weight:700;font-size:10.5px;display:flex;align-items:center}
+.rowT{background:#FBFAF7;border-bottom:1px solid var(--line2)}
+.rowT>div{padding:6px 5px;display:flex;flex-direction:column;gap:4px;min-height:36px}
+.tcard{display:flex;flex-direction:column;gap:2px;padding:6px 8px;background:#FFF6E3;border:1px solid #E7B15A;border-radius:6px;cursor:pointer;font-size:11px}
+.tcard.g2trip,.tcard.g2meet{border-color:var(--g2t);background:#EAF4F2}
+.tcard.g3trip,.tcard.g3meet{border-color:var(--g3t);background:#FBEFE6}
+.tcard b{font-size:11.5px}
+.tcard .m{color:var(--ink2);display:flex;gap:6px;flex-wrap:wrap}
+.tcard .term{font-weight:700;color:var(--vpc)}
+.tcard a{color:var(--teal);text-decoration:none}
+.rowH{background:#EEEDE8;border-bottom:1px solid var(--line)}
+.rowH>div{padding:6px 6px}
+.rowH .dn{font-weight:700;font-size:12px}
+.rowH .dn.sun,.rowH .dn.hol{color:var(--red)}
+.rowH .dn.today{color:var(--teal)}
+.rowH .hn{font-size:10px;color:var(--mute)}
+.rowA{border-bottom:1px solid var(--line2)}
+.rowA>div{padding:5px 4px;display:flex;flex-direction:column;gap:4px;min-height:34px}
+.rowA .ev{margin:0;font-size:11px}
+.timegrid{display:grid;grid-template-columns:56px repeat(var(--nd),minmax(0,1fr));grid-template-rows:repeat(var(--nr),15px);font-size:10.5px}
+.timegrid .tl{padding:0 7px;color:var(--mute);border-bottom:1px solid #F0EEE8;display:flex;align-items:center;grid-column:1;font-size:10.5px}
+.timegrid .tl.h{background:#EEEDE8}
+.daycol{border-left:1px solid var(--line2);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(var(--nr),15px);gap:0 2px;padding:0 2px;position:relative}
+.daycol.hol{background:#EDEBE4;display:flex;align-items:center;justify-content:center;color:var(--mute);font-weight:700;font-size:12.5px}
+.daycol.today{background:#F7FBFB}
+.daycol .hl{position:absolute;left:0;right:0;border-top:1px solid #F0EEE8;pointer-events:none}
+.tev{margin:1px 0;border-radius:4px;padding:3px 5px;line-height:1.3;overflow:hidden;cursor:pointer;font-size:10.5px;z-index:1}
+.tev.g2trip{background:var(--g2t);color:#fff} .tev.g3trip{background:var(--g3t);color:#fff}
+.tev.g2meet{background:var(--g2m);color:#fff} .tev.g3meet{background:var(--g3m);color:#fff}
+.tev.g2event{background:var(--g2eBg);color:var(--g2eTx);border-left:3px solid var(--g2eTx)}
+.tev.g3event{background:var(--g3eBg);color:var(--g3eTx);border-left:3px solid var(--g3eTx)}
+.rowS{display:grid;grid-template-columns:56px repeat(var(--nd),minmax(0,1fr));grid-auto-rows:23px;gap:3px 0;padding:5px 0;background:#FBFAF7;border-bottom:1px solid var(--line2);font-size:11.5px}
+.rowS .lab{grid-column:1;padding:0 7px;color:var(--mute);font-weight:700;font-size:10.5px;display:flex;align-items:center}
+.rowS .ev{line-height:21px}
+.rowS .ev.g2event,.rowS .ev.g3event{line-height:20px}
+.mini{height:21px;padding:0 8px;border:0;border-radius:11px;font-size:10.5px;color:#fff;cursor:pointer;margin:3px 3px 0 0}
+.mini.g2m{background:var(--g2m)} .mini.g3m{background:var(--g3m)}
+.rowN{border-top:1px solid var(--line);background:#FBFAF7}
+.rowN>div{padding:5px;min-height:38px}
+.rowN .note{min-height:28px;padding:4px 6px;border-radius:4px;font-size:11.5px;outline:none;line-height:1.4}
+.rowN .note:empty:before{content:"더블클릭 입력";color:#B5B8BD}
+.rowN .note:focus{background:#fff;box-shadow:0 0 0 2px var(--teal2)}
+/* ---------- 전체일정 목록 ---------- */
+.list{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:auto}
+.list table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:720px}
+.list th,.list td{padding:8px 9px;border-bottom:1px solid var(--line2);text-align:left;white-space:nowrap}
+.list th{background:#EEEDE8;font-size:11.5px;color:var(--ink2);position:sticky;top:0}
+.list tr.mo td{background:#F6F5F1;font-weight:700;color:var(--vpc);font-size:12.5px}
+.list tr.r:hover td{background:#FAFAF7;cursor:pointer}
+.pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:10.5px;color:#fff}
+.pill.g2trip{background:var(--g2t)} .pill.g3trip{background:var(--g3t)}
+.pill.g2meet{background:var(--g2m)} .pill.g3meet{background:var(--g3m)}
+.pill.g2event{background:var(--g2eBg);color:var(--g2eTx)} .pill.g3event{background:var(--g3eBg);color:var(--g3eTx)}
+.pill.holiday{background:var(--hol);color:var(--ink2)}
+.vpmark{color:var(--vpc);font-weight:700}
+/* ---------- 패널 ---------- */
+.ov{position:fixed;inset:0;background:rgba(20,24,30,.45);display:none;align-items:stretch;justify-content:flex-end;z-index:50}
+.ov.show{display:flex}
+.panel{width:460px;max-width:100%;background:#fff;height:100%;overflow:auto;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.2)}
+.panel .ph{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line2);position:sticky;top:0;background:#fff;z-index:2}
+.panel .ph b{font-size:15px;color:var(--vpc)}
+.panel .pb{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.f{display:flex;flex-direction:column;gap:4px}
+.f label,.f .lab{font-size:11px;font-weight:700;color:var(--mute)}
+.f input,.f select,.f textarea{height:38px;padding:0 10px;border:1px solid var(--line);border-radius:7px;background:#fff;width:100%}
+.f textarea{height:80px;padding:8px 10px;resize:vertical}
+.g2c{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ck{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink)}
+.ck input{width:17px;height:17px}
+.tgl{display:flex;align-items:center;gap:8px;width:100%;height:40px;padding:0 12px;background:#FFF6E3;border:1px solid #E7B15A;border-radius:8px;font-size:13px;font-weight:700;color:var(--ink);text-align:left}
+.tgl .ar{margin-left:auto;transition:.15s}
+.tgl.open .ar{transform:rotate(90deg)}
+.tbox{display:flex;flex-direction:column;gap:8px;padding:12px;background:#FFFBF2;border:1px solid #E7B15A;border-top:0;border-radius:0 0 8px 8px}
+.tbox .f input,.tbox .f select{height:35px}
+.tbox .tt{display:flex;gap:4px}
+.tbox .tt button{flex-grow:1;height:33px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:12px}
+.tbox .tt button.on{background:var(--vpc);border-color:var(--vpc);color:#fff;font-weight:700}
+.att{display:flex;flex-direction:column;gap:4px}
+.att a{display:flex;align-items:center;gap:6px;padding:7px 10px;background:#fff;border:1px solid var(--line);border-radius:6px;font-size:12px;text-decoration:none;color:var(--teal)}
+.att a .x{margin-left:auto;color:var(--red);font-weight:700;padding:0 4px}
+.panel .pf{margin-top:auto;display:flex;gap:8px;padding:13px 16px;border-top:1px solid var(--line2);position:sticky;bottom:0;background:#fff}
+.dbtn{height:40px;padding:0 16px;border:1px solid var(--red);background:#fff;color:var(--red);border-radius:7px;font-size:13px}
+.sbtn{height:40px;padding:0 20px;border:0;background:var(--teal);color:#fff;border-radius:7px;font-size:13.5px;font-weight:700}
+.cbtn{height:40px;padding:0 16px;border:1px solid var(--line);background:#fff;border-radius:7px;font-size:13px}
+.hint{font-size:11.5px;color:var(--ink2);line-height:1.5;padding:10px 12px;background:#EEEDE8;border-radius:8px}
+.hint code{background:#fff;padding:1px 4px;border-radius:3px;font-size:11px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+.toast.show{opacity:1}
+@media (max-width:640px){
+  .main{padding:8px}
+  .brand{font-size:15px}
+  .brand small{display:none}
+  .mtitle{font-size:15.5px;min-width:92px}
+  .ibtn{height:32px;padding:0 9px;font-size:12px}
+  .legend{grid-template-columns:auto auto;gap:2px 10px;font-size:10.5px;margin-left:0;width:100%}
+  .week{font-size:10px;min-height:66px;grid-auto-rows:18px}
+  .ev{padding:0 3px;line-height:17px;margin:0 1px;border-radius:3px}
+  .ev.g2event,.ev.g3event{line-height:16px}
+  .week .d{padding:0 4px;font-size:10.5px}
+  .week .d .today{width:18px;height:18px;font-size:10px}
+  .panel{width:100%}
+}
+@media print{.bar,.wk .head .r{display:none}.main{padding:0}}
+</style>
+</head>
+<body>
+<div class="main">
+  <div class="bar">
+    <div class="row">
+      <div class="brand">G2/G3 일정<small>정대영 부사장님 · 중화 G2 · 미주 G3</small></div>
+      <span style="flex-grow:1"></span>
+      <button class="ibtn on" id="navMonth" onclick="setView('month')">월간</button>
+      <button class="ibtn" id="navList" onclick="setView('list')">전체일정</button>
+      <button class="ibtn" onclick="openSettings()" title="설정 · 클라우드">⚙</button>
+      <button class="ibtn primary" onclick="openEvent(null)">+ 추가</button>
+    </div>
+    <div class="row">
+      <button class="ibtn" onclick="moveMonth(-1)">&lt;</button>
+      <div class="mtitle" id="mTitle"></div>
+      <button class="ibtn" onclick="moveMonth(1)">&gt;</button>
+      <button class="ibtn" onclick="goToday()">오늘</button>
+      <div class="legend">
+        <span><i style="background:var(--g2t)"></i>G2 출장</span><span><i style="background:var(--g3t)"></i>G3 출장</span>
+        <span><i style="background:var(--g2m)"></i>G2 회의</span><span><i style="background:var(--g3m)"></i>G3 회의</span>
+        <span><i style="background:var(--g2eBg);border-left:3px solid var(--g2eTx)"></i>G2 행사</span><span><i style="background:var(--g3eBg);border-left:3px solid var(--g3eTx)"></i>G3 행사</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="chips">
+        <button class="chip vp on" data-f="vp" onclick="toggleF('vp')">★ 정부사장님</button>
+        <button class="chip g2 on" data-f="g2" onclick="toggleF('g2')">G2 중화</button>
+        <button class="chip g3 on" data-f="g3" onclick="toggleF('g3')">G3 미주</button>
+        <button class="chip g2e on" data-f="g2e" onclick="toggleF('g2e')">G2 행사</button>
+        <button class="chip g3e on" data-f="g3e" onclick="toggleF('g3e')">G3 행사</button>
+      </div>
+      <div class="stat" id="hdrStat"></div>
+    </div>
+  </div>
+  <div id="viewMonth"></div>
+  <div id="viewList" style="display:none"></div>
+</div>
+
+<!-- 일정 편집 -->
+<div class="ov" id="ovEvent" onclick="if(event.target===this)closeEvent()">
+  <div class="panel">
+    <div class="ph"><b id="evTitleH">일정 상세</b><span style="flex-grow:1"></span><button class="ibtn" onclick="closeEvent()">×</button></div>
+    <div class="pb">
+      <div class="f"><label for="e_title">제목</label><input id="e_title" placeholder="[중국] 상해 Den Tech (10/22-25)"></div>
+      <div class="g2c">
+        <div class="f"><label for="e_start">시작일</label><input id="e_start" type="date"></div>
+        <div class="f"><label for="e_end">종료일</label><input id="e_end" type="date"></div>
+      </div>
+      <div class="g2c">
+        <div class="f"><label for="e_allday">시간</label><select id="e_allday" onchange="toggleTime()"><option value="1">종일</option><option value="0">시간 지정</option></select></div>
+        <div class="f" id="timeRow" style="display:none"><label>시작시간 ~ 완료시간</label><div style="display:flex;gap:4px"><input id="e_st" type="time" step="1800"><input id="e_et" type="time" step="1800"></div></div>
+      </div>
+      <div class="g2c">
+        <div class="f"><label for="e_type">유형 (배색)</label>
+          <select id="e_type">
+            <option value="g2trip">G2 출장</option>
+            <option value="g3trip">G3 출장</option>
+            <option value="g2meet">G2 회의</option>
+            <option value="g3meet">G3 회의</option>
+            <option value="g2event">G2 행사</option>
+            <option value="g3event">G3 행사</option>
+            <option value="holiday">휴일·공휴일</option>
+          </select></div>
+        <div class="f"><label for="e_region">지역</label><input id="e_region" placeholder="중국 · 상해"></div>
+      </div>
+      <label class="ck"><input type="checkbox" id="e_vp"><span class="vpmark">★</span> 정부사장님 참석</label>
+      <div>
+        <button class="tgl" id="tglTravel" onclick="toggleTravel()">✈ 이동 정보 (항공·기차·터미널·첨부)<span class="ar">▶</span></button>
+        <div class="tbox" id="travelBox" style="display:none">
+          <div class="g2c">
+            <div class="f"><label for="tr_mode">수단</label><select id="tr_mode"><option>항공</option><option>기차(KTX/고속철)</option><option>차량</option><option>기타</option></select></div>
+            <div class="f"><label for="tr_no">편명 / 열차번호</label><input id="tr_no" placeholder="KE893"></div>
+            <div class="f"><label for="tr_from">출발지</label><input id="tr_from" placeholder="인천(ICN)"></div>
+            <div class="f"><label for="tr_fromTime">출발 시각</label><input id="tr_fromTime" type="time" step="300"></div>
+            <div class="f"><label for="tr_to">도착지</label><input id="tr_to" placeholder="상해(PVG)"></div>
+            <div class="f"><label for="tr_toTime">도착 시각</label><input id="tr_toTime" type="time" step="300"></div>
+            <div class="f"><div class="lab">출발 터미널</div><div class="tt"><button id="tm_T1" onclick="setTerm('T1')">T1</button><button id="tm_T2" onclick="setTerm('T2-3')">T2-3</button><button id="tm_x" onclick="setTerm('')">해당없음</button></div></div>
+            <div class="f"><label for="tr_pnr">예약번호 / 좌석</label><input id="tr_pnr"></div>
+          </div>
+          <div class="f"><div class="lab">첨부 (e-티켓, 여정표 → 구글드라이브 저장)</div>
+            <div class="att" id="attList"></div>
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <label class="ibtn" style="display:inline-flex;align-items:center">파일 업로드<input type="file" id="attFile" multiple style="display:none" onchange="uploadAtt(this.files)"></label>
+              <button class="ibtn" onclick="addLink()">링크 추가</button>
+            </div>
+            <div id="attHint" style="font-size:11px;color:var(--mute)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="f"><label for="e_memo">출장 아젠다</label><textarea id="e_memo" placeholder="방문 목적 · 미팅 대상 · 안건"></textarea></div>
+    </div>
+    <div class="pf"><button class="dbtn" id="btnDel" onclick="deleteEvent()">삭제</button><span style="flex-grow:1"></span><button class="cbtn" onclick="closeEvent()">취소</button><button class="sbtn" onclick="saveEvent()">저장</button></div>
+  </div>
+</div>
+
+<!-- 설정 -->
+<div class="ov" id="ovSet" onclick="if(event.target===this)closeSettings()">
+  <div class="panel">
+    <div class="ph"><b>설정 · 구글드라이브 연동</b><span style="flex-grow:1"></span><button class="ibtn" onclick="closeSettings()">×</button></div>
+    <div class="pb">
+      <div class="hint">① <b>Code.gs</b>를 구글 Apps Script(계정 u/1)에 붙여넣고 <b>배포 → 웹 앱</b>(실행: 나 / 액세스: 모든 사용자)<br>② 배포 URL을 아래에 붙여넣기 → <b>연결 테스트</b><br>③ 이후 드라이브 <code>G2G3일정/schedule_data.json</code> 자동 저장, 첨부는 <code>G2G3일정/첨부</code> 폴더</div>
+      <div class="f"><label for="s_url">Apps Script 웹앱 URL</label><input id="s_url" placeholder="https://script.google.com/macros/s/.../exec"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="ibtn" onclick="testCloud()">연결 테스트</button>
+        <button class="ibtn primary" onclick="cloudSave(true)">클라우드 저장</button>
+        <button class="ibtn" onclick="cloudLoad(true)">클라우드 불러오기</button>
+      </div>
+      <label class="ck"><input type="checkbox" id="s_auto">수정할 때마다 자동으로 클라우드 저장</label>
+      <div class="f"><label for="s_h0">주간 패널 시간 범위</label><div style="display:flex;gap:4px;align-items:center"><input id="s_h0" type="number" min="0" max="23" style="width:70px"> 시 ~ <input id="s_h1" type="number" min="1" max="24" style="width:70px"> 시</div></div>
+      <button class="sbtn" onclick="saveSettings()">설정 저장</button>
+      <hr style="border:0;border-top:1px solid var(--line2)">
+      <div class="lab" style="font-size:11px;font-weight:700;color:var(--mute)">구글캘린더</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="ibtn" onclick="pushCalendar()">이 달 일정 → 구글캘린더 등록</button>
+        <button class="ibtn" onclick="exportICS()">ICS 파일 내려받기</button>
+      </div>
+      <hr style="border:0;border-top:1px solid var(--line2)">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="ibtn" onclick="exportJSON()">JSON 백업</button>
+        <label class="ibtn" style="display:inline-flex;align-items:center">JSON 복원<input type="file" accept=".json" style="display:none" onchange="importJSON(this.files[0])"></label>
+        <button class="dbtn" style="height:34px" onclick="resetSeed()">엑셀 초기 데이터로 재설정</button>
+      </div>
+      <div id="setLog" style="font-size:11.5px;color:var(--ink2);white-space:pre-line"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== 데이터 ===================== */
+const SEED = [{"id":"ev001","title":"[중국] 메가스쿨 (7/7-10)","start":"2026-07-07","end":"2026-07-08","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev002","title":"[중국] 메가스쿨 (7/9)","start":"2026-07-09","end":"2026-07-09","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev003","title":"[중국] 메가스쿨 (7/7-10)","start":"2026-07-10","end":"2026-07-10","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev004","title":"[중국] 심천CEO사롱 (7/13-14)","start":"2026-07-13","end":"2026-07-14","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev005","title":"[중국] 무한CEO사롱 (7/15-16)","start":"2026-07-15","end":"2026-07-16","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev006","title":"[중국]메이야 방한(7/18-21)","start":"2026-07-18","end":"2026-07-18","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev007","title":"우한 → 타이베이 이동","start":"2026-07-16","end":"2026-07-16","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev008","title":"[대만] Sunriser(7/17)","start":"2026-07-17","end":"2026-07-17","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"대만","travel":{},"attachments":[],"memo":""},{"id":"ev009","title":"[대만] TBMS(7/18)","start":"2026-07-18","end":"2026-07-18","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"대만","travel":{},"attachments":[],"memo":""},{"id":"ev010","title":"[중국]메이야 방한(7/18-21)","start":"2026-07-19","end":"2026-07-19","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev011","title":"[중국]메이야 방한(7/18-21)","start":"2026-07-20","end":"2026-07-20","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev012","title":"[중국]메이야 방한(7/18-21)","start":"2026-07-21","end":"2026-07-21","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev013","title":"대만 → 인천","start":"2026-07-19","end":"2026-07-19","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev014","title":"에비던스미팅","start":"2026-07-21","end":"2026-07-21","allDay":true,"startTime":"","endTime":"","type":"g2meet","vp":true,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev015","title":"[중국] TASK (7/19-23)","start":"2026-07-19","end":"2026-07-21","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev016","title":"[중국] TASK (7/19-23)","start":"2026-07-22","end":"2026-07-22","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev017","title":"[중국] TASK (7/19-23)","start":"2026-07-23","end":"2026-07-23","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev018","title":"[중국]동북DSO 방한 (7/27-29)","start":"2026-07-27","end":"2026-07-27","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev019","title":"[중국]동북DSO 방한 (7/27-29)","start":"2026-07-28","end":"2026-07-29","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev020","title":"[콜롬비아] Odontotech (국제학술대회 7/30-31)","start":"2026-07-30","end":"2026-07-31","allDay":true,"startTime":"","endTime":"","type":"g3event","vp":false,"region":"콜롬비아","travel":{},"attachments":[],"memo":""},{"id":"ev021","title":"인천 > 뉴저지","start":"2026-08-03","end":"2026-08-03","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev022","title":"미국 워크샵","start":"2026-08-04","end":"2026-08-05","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev023","title":"뉴저지 > 벤쿠버","start":"2026-08-06","end":"2026-08-06","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev024","title":"캐나다 워크샵","start":"2026-08-07","end":"2026-08-07","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev025","title":"벤쿠버 > 인천","start":"2026-08-08","end":"2026-08-08","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev026","title":"도착","start":"2026-08-09","end":"2026-08-09","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev027","title":"광복절","start":"2026-08-15","end":"2026-08-15","allDay":true,"startTime":"","endTime":"","type":"holiday","vp":false,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev028","title":"북경 출장","start":"2026-08-21","end":"2026-08-22","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev029","title":"인천 > 대만 TBMS 미팅","start":"2026-08-27","end":"2026-08-27","allDay":true,"startTime":"","endTime":"","type":"g2meet","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev030","title":"대만 일정","start":"2026-08-28","end":"2026-08-28","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev031","title":"[대만] 신광병원 국제 세미나 (8/29)","start":"2026-08-29","end":"2026-08-29","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"대만","travel":{},"attachments":[],"memo":""},{"id":"ev032","title":"대만 > 인천","start":"2026-08-30","end":"2026-08-30","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev033","title":"인천 → 칠레 (이동)","start":"2026-09-02","end":"2026-09-02","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev034","title":"[칠레]Santiago 주요 고객 방문","start":"2026-09-03","end":"2026-09-03","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"칠레","travel":{},"attachments":[],"memo":""},{"id":"ev035","title":"[칠레]Santiago 중남미법인 워크샵","start":"2026-09-04","end":"2026-09-04","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"칠레","travel":{},"attachments":[],"memo":""},{"id":"ev036","title":"[칠레] 2026 LASM Santiago","start":"2026-09-05","end":"2026-09-05","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"칠레","travel":{},"attachments":[],"memo":""},{"id":"ev037","title":"[중국] 신장세미나 (9/4-11)","start":"2026-09-04","end":"2026-09-05","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev038","title":"[중국] 서울대교육행사 (9/1-4)","start":"2026-09-01","end":"2026-09-04","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev039","title":"칠레 → (1회 경유) 인천(9/8) (이동)","start":"2026-09-06","end":"2026-09-08","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev040","title":"[중국] 정주 즈더 CEO사롱 (9/9-10)","start":"2026-09-09","end":"2026-09-10","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev041","title":"[중국] 모커얼 DSO 방문","start":"2026-09-11","end":"2026-09-11","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev042","title":"[중국] 신장세미나 (9/4-11)","start":"2026-09-06","end":"2026-09-11","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev043","title":"[중국] 항런 개업","start":"2026-09-12","end":"2026-09-12","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev044","title":"[중국] 마오쥐 DSO 방문 (9/14-16)","start":"2026-09-14","end":"2026-09-15","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev045","title":"[중국] 마오쥐 DSO 방문 (9/14-16)","start":"2026-09-16","end":"2026-09-16","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev046","title":"인천 → 미국 (이동)","start":"2026-09-18","end":"2026-09-18","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev047","title":"[미국] 2026 NASM 시카고 9/18-19","start":"2026-09-19","end":"2026-09-19","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"미국","travel":{},"attachments":[],"memo":""},{"id":"ev048","title":"[대만] KOL 본사 교육 (9/15-17)","start":"2026-09-15","end":"2026-09-17","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"대만","travel":{},"attachments":[],"memo":""},{"id":"ev049","title":"미국 → 인천(9/21) (이동)","start":"2026-09-20","end":"2026-09-21","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev050","title":"추석 연휴","start":"2026-09-24","end":"2026-09-26","allDay":true,"startTime":"","endTime":"","type":"holiday","vp":false,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev051","title":"[미국] AAOMS 연례 학회 (9/28-10/3)","start":"2026-09-28","end":"2026-09-30","allDay":true,"startTime":"","endTime":"","type":"g3event","vp":false,"region":"미국","travel":{},"attachments":[],"memo":""},{"id":"ev052","title":"[대만] CTC (10/1~2)","start":"2026-10-01","end":"2026-10-01","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"대만","travel":{},"attachments":[],"memo":""},{"id":"ev053","title":"인천 → 대만 (이동)","start":"2026-10-02","end":"2026-10-02","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev054","title":"[대만] WCLI (10/3-4)","start":"2026-10-03","end":"2026-10-03","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"대만","travel":{},"attachments":[],"memo":""},{"id":"ev055","title":"[미국] AAOMS 연례 학회 (9/28-10/3)","start":"2026-10-01","end":"2026-10-03","allDay":true,"startTime":"","endTime":"","type":"g3event","vp":false,"region":"미국","travel":{},"attachments":[],"memo":""},{"id":"ev056","title":"[대만] WCLI (10/3-4)","start":"2026-10-04","end":"2026-10-04","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"대만","travel":{},"attachments":[],"memo":""},{"id":"ev057","title":"대만 → 인천 (이동)","start":"2026-10-05","end":"2026-10-05","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev058","title":"인천 → 광저우 (이동)","start":"2026-10-08","end":"2026-10-08","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev059","title":"[중국] 광저우/심천 (10/8-10)","start":"2026-10-09","end":"2026-10-09","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev060","title":"광저우 → 인천 (이동)","start":"2026-10-10","end":"2026-10-10","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev061","title":"[미국] ADA Scientific Session (10/8-10)","start":"2026-10-08","end":"2026-10-10","allDay":true,"startTime":"","endTime":"","type":"g3event","vp":false,"region":"미국","travel":{},"attachments":[],"memo":""},{"id":"ev062","title":"인천 → 멕시코 (이동)","start":"2026-10-15","end":"2026-10-15","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev063","title":"[멕시코] 티후아나 Full Mouth Seminar 10/16-17 (미주대상)","start":"2026-10-16","end":"2026-10-17","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"멕시코","travel":{},"attachments":[],"memo":""},{"id":"ev064","title":"[국내] 중남미 TASK (10/12-17)","start":"2026-10-12","end":"2026-10-13","allDay":true,"startTime":"","endTime":"","type":"g3event","vp":false,"region":"국내","travel":{},"attachments":[],"memo":""},{"id":"ev065","title":"[국내] 중남미 TASK (10/12-17)","start":"2026-10-14","end":"2026-10-14","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"국내","travel":{},"attachments":[],"memo":""},{"id":"ev066","title":"[국내] 중남미 TASK (10/12-17)","start":"2026-10-15","end":"2026-10-17","allDay":true,"startTime":"","endTime":"","type":"g3event","vp":false,"region":"국내","travel":{},"attachments":[],"memo":""},{"id":"ev067","title":"멕시코 → 인천(10/19) (이동)","start":"2026-10-18","end":"2026-10-19","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev068","title":"[중국] A/L Comp. (10/23)","start":"2026-10-23","end":"2026-10-23","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev069","title":"인천 → 상해 (이동)","start":"2026-10-21","end":"2026-10-21","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev070","title":"[중국] 상해Den Tech(22-25)","start":"2026-10-22","end":"2026-10-23","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev071","title":"상해 → 대만 (이동)","start":"2026-10-24","end":"2026-10-24","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev072","title":"[대만] 메가젠 심포지움","start":"2026-10-25","end":"2026-10-25","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"대만","travel":{},"attachments":[],"memo":""},{"id":"ev073","title":"대만 → 인천 (이동)","start":"2026-10-26","end":"2026-10-26","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev074","title":"[미국] AAP 연례학회 (10/29-11/1)","start":"2026-10-29","end":"2026-10-31","allDay":true,"startTime":"","endTime":"","type":"g3event","vp":false,"region":"미국","travel":{},"attachments":[],"memo":""},{"id":"ev075","title":"AAP 연례학회 ~11/1","start":"2026-11-01","end":"2026-11-01","allDay":true,"startTime":"","endTime":"","type":"g3event","vp":false,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev076","title":"[멕시코] AMIC 83 전시+ADM-AMIC 국제학회 11/4-8","start":"2026-11-04","end":"2026-11-07","allDay":true,"startTime":"","endTime":"","type":"g3event","vp":false,"region":"멕시코","travel":{},"attachments":[],"memo":""},{"id":"ev077","title":"사업계획 1차리뷰 [중남미]","start":"2026-11-03","end":"2026-11-03","allDay":true,"startTime":"","endTime":"","type":"g3meet","vp":true,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev078","title":"사업계획 1차리뷰 [중화]","start":"2026-11-04","end":"2026-11-04","allDay":true,"startTime":"","endTime":"","type":"g2meet","vp":true,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev079","title":"사업계획 1차리뷰 [북미]","start":"2026-11-05","end":"2026-11-05","allDay":true,"startTime":"","endTime":"","type":"g3meet","vp":true,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev080","title":"AMIC 학회 ~11/8","start":"2026-11-08","end":"2026-11-08","allDay":true,"startTime":"","endTime":"","type":"g3event","vp":false,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev081","title":"[중국] 중국 TASK (11/9-13)","start":"2026-11-09","end":"2026-11-09","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev082","title":"[중국] 중국 TASK 11/10","start":"2026-11-10","end":"2026-11-10","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev083","title":"[중국] 중국 TASK (11/9-13)","start":"2026-11-11","end":"2026-11-13","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev084","title":"인천 → 대만 (이동)","start":"2026-11-13","end":"2026-11-13","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev085","title":"[대만]中华牙医 전시회 (11/14~15)","start":"2026-11-14","end":"2026-11-14","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"대만","travel":{},"attachments":[],"memo":""},{"id":"ev086","title":"[대만]中华牙医 대만 → 항주 (이동)","start":"2026-11-15","end":"2026-11-15","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"대만","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev087","title":"[중국] 항주 CEO사롱 (11/16-17)","start":"2026-11-16","end":"2026-11-16","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev088","title":"항주 → 인천 (이동)","start":"2026-11-17","end":"2026-11-17","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev089","title":"[중국] 메가스쿨 중국 로드쇼 (11/24~25)","start":"2026-11-24","end":"2026-11-25","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev090","title":"인천 → 미국 (이동)","start":"2026-11-27","end":"2026-11-27","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev091","title":"[미국] GNYDM","start":"2026-11-28","end":"2026-11-28","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"미국","travel":{},"attachments":[],"memo":""},{"id":"ev092","title":"[미국] 메가스쿨","start":"2026-11-29","end":"2026-11-29","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"미국","travel":{},"attachments":[],"memo":""},{"id":"ev093","title":"미국 → 인천 (이동)","start":"2026-11-30","end":"2026-11-30","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev094","title":"[중국] 서울대 교육행사 (12/1-4)","start":"2026-12-01","end":"2026-12-02","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev095","title":"[중국] 서울대 교육행사","start":"2026-12-03","end":"2026-12-03","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev096","title":"[중국] 서울대 교육행사 (12/1-4)","start":"2026-12-04","end":"2026-12-04","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev097","title":"미국 → 인천 (이동)","start":"2026-12-01","end":"2026-12-01","allDay":true,"startTime":"","endTime":"","type":"g3trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev098","title":"[미국] NYU Laser Dentistry 교육 행사 (12/4-5)","start":"2026-12-04","end":"2026-12-05","allDay":true,"startTime":"","endTime":"","type":"g3event","vp":false,"region":"미국","travel":{},"attachments":[],"memo":""},{"id":"ev099","title":"G2/G3 법인장 회의","start":"2026-12-07","end":"2026-12-10","allDay":true,"startTime":"","endTime":"","type":"g2meet","vp":true,"region":"","travel":{},"attachments":[],"memo":""},{"id":"ev100","title":"[대만] TBMS 세미나 (12/12~14)","start":"2026-12-12","end":"2026-12-12","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"대만","travel":{},"attachments":[],"memo":""},{"id":"ev101","title":"[중국] 시드니 연회 (12/11-19)","start":"2026-12-11","end":"2026-12-12","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev102","title":"[대만] TBMS 세미나 (12/12-14)","start":"2026-12-13","end":"2026-12-14","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"대만","travel":{},"attachments":[],"memo":""},{"id":"ev103","title":"인천 → 시드니 (이동)","start":"2026-12-13","end":"2026-12-13","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev104","title":"[중국] 시드니 연회 (12/11-19)","start":"2026-12-14","end":"2026-12-15","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"중국","travel":{},"attachments":[],"memo":""},{"id":"ev105","title":"시드니 → 인천 (이동)","start":"2026-12-16","end":"2026-12-16","allDay":true,"startTime":"","endTime":"","type":"g2trip","vp":true,"region":"","travel":{"mode":"항공","no":"","from":"","fromTime":"","to":"","toTime":"","terminal":"","pnr":""},"attachments":[],"memo":""},{"id":"ev106","title":"[중국] 시드니 연회 (12/11-19)","start":"2026-12-17","end":"2026-12-19","allDay":true,"startTime":"","endTime":"","type":"g2event","vp":false,"region":"중국","travel":{},"attachments":[],"memo":""}];
+const LS_KEY='g2g3_schedule_v2', LS_OLD='g2g3_schedule_v1', LS_SET='g2g3_settings_v1';
+const TYPE_NAME={g2trip:'G2 출장',g3trip:'G3 출장',g2meet:'G2 회의',g3meet:'G3 회의',g2event:'G2 행사',g3event:'G3 행사',holiday:'휴일'};
+let DB={events:[],notes:{},updatedAt:''};
+let SET={gasUrl:'',autoCloud:true,weekend:false,h0:8,h1:21};
+let F={vp:true,g2:true,g3:true,g2e:true,g3e:true};
+let cur=new Date(); cur=new Date(cur.getFullYear(),cur.getMonth(),1);
+let selWeek=null, view='month', editing=null, editAtt=[], editTerm='';
+const TODAY=fmt(new Date());
+
+function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function pd(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function addD(s,n){const d=pd(s);d.setDate(d.getDate()+n);return fmt(d)}
+function uid(){return 'ev'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function hhmm(t){return t?t.slice(0,5):''}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200)}
+
+function migrateOld(old){ // v1(status/targets) → v2(type/vp)
+  const G3KW=/미국|멕시코|칠레|콜롬비아|캐나다|뉴저지|벤쿠버|시카고|중남미|북미|AAOMS|AAID|AAP|GNYDM|NASM|AMIC|NYU|LASM|ICOI|티후아나/;
+  (old.events||[]).forEach(e=>{
+    if(e.type)return;
+    const tg=e.targets||[];e.vp=tg.includes('VP');
+    if(e.status==='holiday'){e.type='holiday';e.vp=false}
+    else{const side=(tg.includes('G3')||G3KW.test(e.title))?'g3':'g2';
+      e.type=e.status==='milestone'?side+'event':(/미팅|회의|리뷰/.test(e.title)?side+'meet':side+'trip')}
+    delete e.status;delete e.targets;
+  });
+  return old;
+}
+function load(){
+  try{const s=localStorage.getItem(LS_SET);if(s)SET=Object.assign(SET,JSON.parse(s))}catch(e){}
+  try{
+    let d=localStorage.getItem(LS_KEY);
+    if(d){DB=JSON.parse(d)}
+    else{
+      const o=localStorage.getItem(LS_OLD);
+      if(o){DB=migrateOld(JSON.parse(o));toast('기존 데이터를 새 구분 체계로 변환했습니다')}
+      else DB={events:JSON.parse(JSON.stringify(SEED)),notes:{},updatedAt:''};
+    }
+    if(!DB.events)DB.events=[];if(!DB.notes)DB.notes={};
+  }catch(e){DB={events:JSON.parse(JSON.stringify(SEED)),notes:{},updatedAt:''}}
+}
+let cloudTimer=null;
+function persist(){
+  DB.updatedAt=new Date().toISOString();
+  try{localStorage.setItem(LS_KEY,JSON.stringify(DB))}catch(e){toast('로컬 저장 실패: '+e.message)}
+  if(SET.gasUrl&&SET.autoCloud){clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>cloudSave(false),1500)}
+  hdrStat();
+}
+function hdrStat(extra){
+  document.getElementById('hdrStat').textContent=extra||((SET.gasUrl?'☁ 드라이브 연동':'로컬 저장')+' · '+DB.events.length+'건');
+}
+
+/* ===================== 필터/뷰 ===================== */
+function toggleF(k){F[k]=!F[k];document.querySelector('.chip[data-f='+k+']').classList.toggle('on',F[k]);render()}
+function visible(e){
+  if(e.type==='holiday')return true;
+  if(F.vp&&e.vp)return true;
+  if(F.g2&&(e.type==='g2trip'||e.type==='g2meet'))return true;
+  if(F.g3&&(e.type==='g3trip'||e.type==='g3meet'))return true;
+  if(F.g2e&&e.type==='g2event')return true;
+  if(F.g3e&&e.type==='g3event')return true;
+  return false;
+}
+function isTravel(e){return !!(e.travel&&(e.travel.no||e.travel.from||e.travel.to||e.travel.mode))}
+function setView(v){view=v;document.getElementById('viewMonth').style.display=v==='month'?'':'none';document.getElementById('viewList').style.display=v==='list'?'':'none';document.getElementById('navMonth').classList.toggle('on',v==='month');document.getElementById('navList').classList.toggle('on',v==='list');render()}
+function moveMonth(n){cur=new Date(cur.getFullYear(),cur.getMonth()+n,1);selWeek=null;render()}
+function goToday(){const t=new Date();cur=new Date(t.getFullYear(),t.getMonth(),1);selWeek=weekStartOf(TODAY);setView('month')}
+function weekStartOf(s){const d=pd(s);d.setDate(d.getDate()-d.getDay());return fmt(d)}
+
+/* ===================== 월간 ===================== */
+const PRI={g2trip:0,g3trip:0,g2meet:1,g3meet:1,g2event:2,g3event:2,holiday:3};
+function render(){
+  document.getElementById('mTitle').textContent=cur.getFullYear()+'년 '+(cur.getMonth()+1)+'월';
+  if(view==='month')renderMonth();else renderList();
+  hdrStat();
+}
+function renderMonth(){
+  const y=cur.getFullYear(),m=cur.getMonth();
+  const first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());
+  const last=new Date(y,m+1,0);const nWeeks=Math.ceil((last.getDate()+first.getDay())/7);
+  const allWs=[];for(let w=0;w<nWeeks;w++)allWs.push(fmt(new Date(start.getFullYear(),start.getMonth(),start.getDate()+w*7)));
+  const focus=selWeek&&allWs.includes(selWeek);
+  let h='<div class="month"><div class="dow"><div class="sun">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="sat">토</div></div>';
+  for(let w=0;w<nWeeks;w++){
+    const ws=allWs[w],we=addD(ws,6);
+    const sel=selWeek===ws;
+    if(focus&&!sel)continue;
+    h+='<div class="week'+(sel?' sel':'')+'" onclick="selectWeek(\''+ws+'\')">';
+    for(let i=0;i<7;i++){const ds=addD(ws,i),d=pd(ds);const out=d.getMonth()!==m;
+      h+='<div class="d'+(out?' out':'')+(i===0?' sun':i===6?' sat':'')+'" style="grid-column:'+(i+1)+';grid-row:1">'+(ds===TODAY?'<span class="today">'+d.getDate()+'</span>':(d.getDate()===1?(d.getMonth()+1)+'/1':d.getDate()))+'<span class="add" onclick="event.stopPropagation();openEvent(null,\''+ds+'\')">+</span></div>';
+    }
+    // 줄 순서: 출장 → 회의 → 행사 → 휴일
+    const evs=DB.events.filter(e=>visible(e)&&e.start<=we&&e.end>=ws)
+      .sort((a,b)=>PRI[a.type]-PRI[b.type]||(a.start<b.start?-1:a.start>b.start?1:(b.end>a.end?1:-1)));
+    let base=0,curPri=-1,lanes=[];
+    evs.forEach(e=>{
+      if(PRI[e.type]!==curPri){base+=lanes.length;lanes=[];curPri=PRI[e.type]}
+      const s=e.start<ws?0:pd(e.start).getDay(),en=e.end>we?6:pd(e.end).getDay();
+      let li=lanes.findIndex(l=>l.every(r=>en<r.s||s>r.e));if(li<0){lanes.push([]);li=lanes.length-1}lanes[li].push({s,e:en});
+      h+='<div class="ev '+e.type+'" style="grid-column:'+(s+1)+'/'+(en+2)+';grid-row:'+(base+li+2)+'" onclick="event.stopPropagation();openEvent(\''+e.id+'\')" title="'+esc(TYPE_NAME[e.type]+' · '+e.title)+'">'+(e.vp?'<span class="m">★</span>':'')+(isTravel(e)?'<span class="m">✈</span>':'')+(e.allDay===false&&e.startTime?'<span class="m">'+hhmm(e.startTime)+'</span>':'')+esc(e.title)+'</div>';
+    });
+    h+='</div>';
+    if(sel)h+=renderWeek(ws);
+  }
+  h+='</div>';
+  document.getElementById('viewMonth').innerHTML=h;
+}
+function selectWeek(ws){selWeek=selWeek===ws?null:ws;renderMonth()}
+
+/* ===================== 주간 패널 ===================== */
+function renderWeek(ws){
+  const days=[];for(let i=(SET.weekend?0:1);i<=(SET.weekend?6:5);i++)days.push(addD(ws,i));
+  const nd=days.length;const H0=Number(SET.h0)||8,H1=Number(SET.h1)||21;const nr=(H1-H0)*2+2;
+  const dn=['\uc77c','\uc6d4','\ud654','\uc218','\ubaa9','\uae08','\ud1a0'];
+  const d0=days[0],dl=days[nd-1];
+  const holOf=d=>DB.events.find(e=>e.type==='holiday'&&e.start<=d&&e.end>=d);
+  let h='<div class="wk" onclick="event.stopPropagation()"><div class="head"><span class="h">\uc8fc\uac04 \u00b7 '+d0.slice(5).replace('-','.')+'('+dn[pd(d0).getDay()]+') ~ '+dl.slice(5).replace('-','.')+'('+dn[pd(dl).getDay()]+')</span><span style="font-size:11px;color:var(--mute)">\ube48 \uc2dc\uac04\uce78 \ud074\ub9ad \u2192 \ud68c\uc758 \uc785\ub825</span><span class="r"><button class="ibtn" onclick="moveWeek(-1)">\u25c0 \uc774\uc804 \uc8fc</button><button class="ibtn" onclick="moveWeek(1)">\ub2e4\uc74c \uc8fc \u25b6</button><button class="ibtn" onclick="exportWeekImage()">\uc774\ubbf8\uc9c0</button><button class="ibtn" onclick="selWeek=null;renderMonth()">\ub2eb\uae30 \u00d7</button></span></div>';
+  h+='<div class="wkwrap"><div class="wkin" style="--nd:'+nd+';--nr:'+nr+'">';
+  // \ucd9c\uc7a5\u00b7\uc774\ub3d9: \uc885\uc77c \uc77c\uc815\uc744 \uc8fc \uc804\uccb4\uc5d0 \uac78\uce58\ub294 \ud558\ub098\uc758 \ub9c9\ub300\ub85c
+  const span=DB.events.filter(e=>visible(e)&&e.allDay!==false&&e.start<=dl&&e.end>=d0)
+    .sort((a,b)=>PRI[a.type]-PRI[b.type]||(a.start<b.start?-1:a.start>b.start?1:(b.end>a.end?1:-1)));
+  const bars=[];const lanes=[];
+  span.forEach(e=>{
+    const cs=e.start<d0?d0:e.start, ce=e.end>dl?dl:e.end;
+    const si=days.indexOf(cs), ei=days.indexOf(ce);
+    if(si<0||ei<0)return;
+    let li=lanes.findIndex(l=>l.every(r=>ei<r.s||si>r.e));
+    if(li<0){lanes.push([]);li=lanes.length-1}
+    lanes[li].push({s:si,e:ei});
+    bars.push({e,si,ei,li});
+  });
+  const nl=Math.max(1,lanes.length);
+  h+='<div class="rowS"><div class="lab" style="grid-row:1/'+(nl+1)+'">\ucd9c\uc7a5<br>\u00b7\uc774\ub3d9</div>';
+  bars.forEach(b=>{
+    const e=b.e,t=e.travel||{};
+    let txt;
+    if(isTravel(e)){
+      txt='\u2708 '+esc(t.from||t.to?((t.from||'?')+' \u2192 '+(t.to||'?')):e.title)+' \u00b7 '+(t.no?esc(t.no):'[\ud3b8\uba85]')+(t.fromTime?' \u00b7 \ucd9c\ubc1c '+hhmm(t.fromTime):'')+(t.toTime?' \u00b7 \ub3c4\ucc29 '+hhmm(t.toTime):'')+(t.terminal?' \u00b7 '+esc(t.terminal):'')+((e.attachments||[]).length?' \ud83d\udcce':'');
+    }else{
+      txt=(e.vp?'<span class="m">\u2605</span>':'')+esc(e.title);
+    }
+    h+='<div class="ev '+e.type+'" style="grid-column:'+(b.si+2)+'/'+(b.ei+3)+';grid-row:'+(b.li+1)+'" onclick="openEvent(\''+e.id+'\')" title="'+esc(TYPE_NAME[e.type]+' \u00b7 '+e.title)+'">'+txt+'</div>';
+  });
+  h+='</div>';
+  // \uc694\uc77c \ud5e4\ub354 + \ud68c\uc758 \ucd94\uac00 \ubc84\ud2bc
+  h+='<div class="wkgrid rowH"><div></div>';
+  days.forEach(d=>{const hol=holOf(d);const dd=pd(d);
+    h+='<div><div class="dn'+(dd.getDay()===0?' sun':'')+(hol?' hol':'')+(d===TODAY?' today':'')+'">'+dn[dd.getDay()]+' '+d.slice(5).replace('-','.')+(d===TODAY?' (\uc624\ub298)':'')+'</div>';
+    if(hol)h+='<div class="hn">'+esc(hol.title)+'</div>';
+    else h+='<div><button class="mini g2m" onclick="addMeet(\''+d+'\',\'g2meet\')">\uff0bG2\ud68c\uc758</button><button class="mini g3m" onclick="addMeet(\''+d+'\',\'g3meet\')">\uff0bG3\ud68c\uc758</button></div>';
+    h+='</div>'});
+  h+='</div>';
+  // \uc2dc\uac04 \uadf8\ub9ac\ub4dc (\uc77c\ubcc4 \ud68c\uc758 \uc785\ub825, \uc2dc\uc791~\uc644\ub8cc \uc140 \ubcd1\ud569)
+  h+='<div class="timegrid">';
+  for(let r=0;r<nr;r++){const hr=H0+Math.floor(r/2),half=r%2;const lab=r===nr-1?'\uc57c\uac04':(half?'':hr+':00');h+='<div class="tl'+((hr===12||hr===18)&&!half?' h':'')+'" style="grid-row:'+(r+1)+'">'+lab+'</div>'}
+  days.forEach((d,ci)=>{const hol=holOf(d);
+    if(hol){h+='<div class="daycol hol" style="grid-column:'+(ci+2)+';grid-row:1/'+(nr+1)+'">'+esc(hol.title)+'</div>';return}
+    h+='<div class="daycol'+(d===TODAY?' today':'')+'" style="grid-column:'+(ci+2)+';grid-row:1/'+(nr+1)+';cursor:copy" title="\ube48 \uce78 \ud074\ub9ad: \uadf8 \uc2dc\uac04 \ud68c\uc758 \uc785\ub825" onclick="addAt(event,\''+d+'\')">';
+    for(let r=1;r<nr;r+=2)h+='<div class="hl" style="top:'+(r*15)+'px"></div>';
+    const toRow=t=>{const [hh,mm]=t.split(':').map(Number);return Math.max(0,Math.min(nr-1,(hh-H0)*2+(mm>=30?1:0)))};
+    const timed=DB.events.filter(e=>visible(e)&&e.allDay===false&&e.start<=d&&e.end>=d).map(e=>{
+      const r0=toRow(e.startTime||(H0+':00'));let r1=e.endTime?toRow(e.endTime):r0+2;if(r1<=r0)r1=r0+1;return {e,r0,r1}})
+      .sort((a,b)=>a.r0-b.r0||PRI[a.e.type]-PRI[b.e.type]);
+    const cols=[[],[],[]];
+    timed.forEach(x=>{let ci2=cols.findIndex(c=>c.every(o=>x.r1<=o.r0||x.r0>=o.r1));if(ci2<0)ci2=2;cols[ci2].push(x);
+      h+='<div class="tev '+x.e.type+'" style="grid-column:'+(ci2+1)+';grid-row:'+(x.r0+1)+'/'+(x.r1+1)+'" onclick="event.stopPropagation();openEvent(\''+x.e.id+'\')">'+(x.e.vp?'\u2605 ':'')+hhmm(x.e.startTime)+(x.e.endTime?'~'+hhmm(x.e.endTime):'')+' '+esc(x.e.title)+'</div>'});
+    h+='</div>'});
+  h+='</div>';
+  // \ud2b9\uc774\uc0ac\ud56d
+  h+='<div class="wkgrid rowN"><div class="lab">\ud2b9\uc774\uc0ac\ud56d</div>';
+  days.forEach(d=>{h+='<div><div class="note" ondblclick="this.contentEditable=true;this.focus()" onblur="this.contentEditable=false;saveNote(\''+d+'\',this.innerText)">'+esc(DB.notes[d]||'')+'</div></div>'});
+  h+='</div></div></div></div>';
+  return h;
+}
+function addMeet(d,t){openEvent(null,d,'09:00','10:00',t)}
+function moveWeek(n){selWeek=addD(selWeek,7*n);const mid=pd(addD(selWeek,3));cur=new Date(mid.getFullYear(),mid.getMonth(),1);render()}
+function saveNote(d,t){t=(t||'').trim();if(t)DB.notes[d]=t;else delete DB.notes[d];persist()}
+function exportWeekImage(){
+  const el=document.querySelector('.wk');if(!el)return;
+  const go=()=>html2canvas(el,{scale:2,backgroundColor:'#ffffff'}).then(c=>{const a=document.createElement('a');a.download='주간일정_'+selWeek+'.png';a.href=c.toDataURL('image/png');a.click()});
+  if(window.html2canvas)return go();
+  const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';s.onload=go;s.onerror=()=>toast('이미지 라이브러리 로드 실패 · 인쇄(PDF)를 이용하세요');document.head.appendChild(s);
+}
+
+/* ===================== 전체일정 목록 ===================== */
+function renderList(){
+  const rows=DB.events.filter(visible).sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:PRI[a.type]-PRI[b.type]);
+  let h='<div class="list"><table><thead><tr><th>#</th><th>기간</th><th>시작~완료 시간</th><th>제목</th><th>유형</th><th>★</th><th>이동정보</th><th>첨부</th></tr></thead><tbody>';
+  let mo='',n=0;
+  rows.forEach(e=>{
+    const m=e.start.slice(0,7);
+    if(m!==mo){mo=m;n=0;h+='<tr class="mo"><td colspan="8">'+m.replace('-','년 ')+'월</td></tr>'}
+    n++;const t=e.travel||{};
+    const per=e.start===e.end?e.start.slice(5).replace('-','.'):e.start.slice(5).replace('-','.')+' ~ '+e.end.slice(5).replace('-','.');
+    const tm=e.allDay===false&&e.startTime?hhmm(e.startTime)+(e.endTime?' ~ '+hhmm(e.endTime):''):'종일';
+    h+='<tr class="r" onclick="openEvent(\''+e.id+'\')"><td>'+n+'</td><td>'+per+'</td><td>'+tm+'</td><td style="white-space:normal;min-width:200px">'+esc(e.title)+'</td><td><span class="pill '+e.type+'">'+TYPE_NAME[e.type]+'</span></td><td>'+(e.vp?'<span class="vpmark">★</span>':'')+'</td><td>'+(isTravel(e)?esc([t.mode,t.no,(t.from&&t.to)?t.from+'→'+t.to:'',t.fromTime?'출발'+hhmm(t.fromTime):'',t.toTime?'도착'+hhmm(t.toTime):'',t.terminal].filter(Boolean).join(' · '))||'✈':'')+'</td><td>'+(e.attachments||[]).map(a=>'<a href="'+esc(a.url)+'" target="_blank" onclick="event.stopPropagation()">📎</a>').join(' ')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  document.getElementById('viewList').innerHTML=h;
+}
+
+/* ===================== 일정 편집 ===================== */
+function addAt(ev,d){
+  if(ev.target!==ev.currentTarget)return;
+  const H0=Number(SET.h0)||8;
+  const y=ev.clientY-ev.currentTarget.getBoundingClientRect().top;
+  const row=Math.max(0,Math.floor(y/15));
+  const hr=H0+Math.floor(row/2),mm=row%2?'30':'00';
+  openEvent(null,d,String(hr).padStart(2,'0')+':'+mm,String(hr+1).padStart(2,'0')+':'+mm,'g2meet');
+}
+function openEvent(id,date,st0,et0,typ0){
+  editing=id?DB.events.find(e=>e.id===id):null;
+  const e=editing||{title:'',start:date||fmt(cur),end:date||fmt(cur),allDay:!st0,startTime:st0||'',endTime:et0||'',type:typ0||'g2trip',vp:true,region:'',travel:{},attachments:[],memo:''};
+  document.getElementById('evTitleH').textContent=editing?'일정 상세':'새 일정';
+  document.getElementById('btnDel').style.display=editing?'':'none';
+  v('e_title',e.title);v('e_start',e.start);v('e_end',e.end);v('e_allday',e.allDay===false?'0':'1');v('e_st',e.startTime||'');v('e_et',e.endTime||'');
+  v('e_type',e.type||'g2trip');v('e_region',e.region||'');v('e_memo',e.memo||'');
+  document.getElementById('e_vp').checked=!!e.vp;
+  const t=e.travel||{};v('tr_mode',t.mode||'항공');v('tr_no',t.no||'');v('tr_from',t.from||'');v('tr_fromTime',t.fromTime||'');v('tr_to',t.to||'');v('tr_toTime',t.toTime||'');v('tr_pnr',t.pnr||'');
+  setTerm(t.terminal||'');editAtt=JSON.parse(JSON.stringify(e.attachments||[]));renderAtt();
+  setTravelOpen(isTravel(e)||editAtt.length>0);
+  toggleTime();
+  document.getElementById('attHint').textContent=SET.gasUrl?'파일은 드라이브 G2G3일정/첨부 폴더에 저장됩니다':'파일 업로드는 설정에서 Apps Script 연결 후 가능 · 지금은 링크 붙여넣기만';
+  document.getElementById('ovEvent').classList.add('show');
+}
+function v(id,val){document.getElementById(id).value=val}
+function g(id){return document.getElementById(id).value}
+function closeEvent(){document.getElementById('ovEvent').classList.remove('show')}
+function toggleTime(){document.getElementById('timeRow').style.display=g('e_allday')==='0'?'':'none'}
+function setTravelOpen(open){document.getElementById('travelBox').style.display=open?'':'none';document.getElementById('tglTravel').classList.toggle('open',open)}
+function toggleTravel(){setTravelOpen(document.getElementById('travelBox').style.display==='none')}
+function setTerm(t){editTerm=t;document.getElementById('tm_T1').classList.toggle('on',t==='T1');document.getElementById('tm_T2').classList.toggle('on',t==='T2-3');document.getElementById('tm_x').classList.toggle('on',t==='')}
+function renderAtt(){document.getElementById('attList').innerHTML=editAtt.map((a,i)=>'<a href="'+esc(a.url)+'" target="_blank">📎 '+esc(a.name)+'<span class="x" onclick="event.preventDefault();editAtt.splice('+i+',1);renderAtt()">×</span></a>').join('')||'<span style="font-size:11px;color:#B5B8BD">첨부 없음</span>'}
+function addLink(){const u=prompt('구글드라이브 파일 링크(공유 링크)를 붙여넣으세요');if(!u)return;const n=prompt('표시 이름','e-티켓.pdf')||'첨부';editAtt.push({name:n,url:u});renderAtt()}
+async function uploadAtt(files){
+  if(!SET.gasUrl){toast('먼저 설정에서 Apps Script를 연결하세요');return}
+  for(const f of files){
+    if(f.size>8*1024*1024){toast(f.name+': 8MB 초과');continue}
+    const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f)});
+    toast(f.name+' 업로드 중…');
+    try{const r=await gas({action:'upload',name:f.name,mime:f.type||'application/octet-stream',data:b64});if(r.ok){editAtt.push({name:f.name,url:r.url,fileId:r.fileId});renderAtt();toast('업로드 완료')}else toast('업로드 실패: '+(r.error||''))}catch(e){toast('업로드 실패: '+e.message)}
+  }
+  document.getElementById('attFile').value='';
+}
+function collectTravel(){
+  const t={mode:g('tr_mode'),no:g('tr_no').trim(),from:g('tr_from').trim(),fromTime:g('tr_fromTime'),to:g('tr_to').trim(),toTime:g('tr_toTime'),terminal:editTerm,pnr:g('tr_pnr').trim()};
+  return (t.no||t.from||t.to||t.fromTime||t.toTime||t.terminal||t.pnr)?t:{};
+}
+function saveEvent(){
+  const title=g('e_title').trim();if(!title){toast('제목을 입력하세요');return}
+  let s=g('e_start'),en=g('e_end')||s;if(!s){toast('시작일을 입력하세요');return}if(en<s)en=s;
+  const obj={id:editing?editing.id:uid(),title,start:s,end:en,allDay:g('e_allday')==='1',startTime:g('e_st'),endTime:g('e_et'),type:g('e_type'),vp:document.getElementById('e_vp').checked,region:g('e_region').trim(),memo:g('e_memo'),travel:collectTravel(),attachments:editAtt};
+  if(editing)Object.assign(editing,obj);else DB.events.push(obj);
+  persist();closeEvent();render();toast('저장됨');
+}
+function deleteEvent(){if(!editing)return;if(!confirm('이 일정을 삭제할까요?'))return;DB.events=DB.events.filter(e=>e.id!==editing.id);persist();closeEvent();render();toast('삭제됨')}
+
+/* ===================== 클라우드 (Apps Script) ===================== */
+async function gas(payload){
+  const r=await fetch(SET.gasUrl,{method:'POST',redirect:'follow',body:JSON.stringify(payload)});
+  const t=await r.text();try{return JSON.parse(t)}catch(e){throw new Error('응답 형식 오류 (배포 액세스 설정 확인): '+t.slice(0,80))}
+}
+function openSettings(){v('s_url',SET.gasUrl);document.getElementById('s_auto').checked=!!SET.autoCloud;v('s_h0',SET.h0);v('s_h1',SET.h1);document.getElementById('setLog').textContent='';document.getElementById('ovSet').classList.add('show')}
+function closeSettings(){document.getElementById('ovSet').classList.remove('show')}
+function saveSettings(){SET.gasUrl=g('s_url').trim();SET.autoCloud=document.getElementById('s_auto').checked;SET.h0=Number(g('s_h0'))||8;SET.h1=Number(g('s_h1'))||21;localStorage.setItem(LS_SET,JSON.stringify(SET));toast('설정 저장');closeSettings();render()}
+function slog(m){const el=document.getElementById('setLog');el.textContent=(new Date().toLocaleTimeString()+' '+m+'\n')+el.textContent}
+async function testCloud(){SET.gasUrl=g('s_url').trim();if(!SET.gasUrl){slog('URL이 비어 있습니다');return}try{const r=await gas({action:'ping'});slog(r.ok?'연결 성공 · 폴더: '+(r.folder||'')+' · 데이터 '+(r.hasData?'있음':'없음'):'실패: '+JSON.stringify(r))}catch(e){slog('연결 실패: '+e.message)}}
+async function cloudSave(manual){
+  if(!SET.gasUrl)return;
+  if(!DB.events.length&&!manual){hdrStat('빈 데이터 → 저장 생략');return}
+  hdrStat('☁ 저장 중…');
+  try{const r=await gas({action:'save',data:DB});if(r.ok){hdrStat();if(manual){slog('저장 완료');toast('클라우드 저장 완료')}}else{hdrStat('☁ 저장 실패');slog('저장 실패: '+(r.error||''))}}catch(e){hdrStat('☁ 저장 실패');if(manual)slog('저장 실패: '+e.message)}
+}
+async function cloudLoad(manual){
+  if(!SET.gasUrl)return;
+  try{const r=await gas({action:'load'});if(r.ok&&r.data&&r.data.events){
+    if(manual&&DB.updatedAt&&r.data.updatedAt&&r.data.updatedAt<DB.updatedAt&&!confirm('클라우드 데이터('+r.data.updatedAt.slice(0,16)+')가 이 기기('+DB.updatedAt.slice(0,16)+')보다 오래됐습니다. 그래도 덮어쓸까요?'))return;
+    DB=migrateOld(r.data);if(!DB.notes)DB.notes={};localStorage.setItem(LS_KEY,JSON.stringify(DB));render();if(manual){slog('불러오기 완료 · '+DB.events.length+'건');toast('클라우드에서 불러옴')}
+  }else if(manual)slog(r.ok?'클라우드에 데이터가 없습니다':'실패: '+(r.error||''))}catch(e){if(manual)slog('불러오기 실패: '+e.message)}
+}
+function calDesc(e){const t=e.travel||{};const L=[];L.push('유형: '+TYPE_NAME[e.type]+(e.vp?' · 정부사장님 참석':''));if(e.region)L.push('지역: '+e.region);if(isTravel(e))L.push('이동: '+[t.mode,t.no,(t.from&&t.to)?t.from+' → '+t.to:'',t.fromTime?'출발 '+hhmm(t.fromTime):'',t.toTime?'도착 '+hhmm(t.toTime):'',t.terminal?'터미널 '+t.terminal:'',t.pnr?'예약 '+t.pnr:''].filter(Boolean).join(' · '));(e.attachments||[]).forEach(a=>L.push('첨부: '+a.name+' '+a.url));if(e.memo)L.push('아젠다: '+e.memo);return L.join('\n')}
+async function pushCalendar(){
+  if(!SET.gasUrl){slog('Apps Script 연결이 필요합니다');return}
+  const y=cur.getFullYear(),m=cur.getMonth();const ms=fmt(new Date(y,m,1)),me=fmt(new Date(y,m+1,0));
+  const evs=DB.events.filter(e=>e.start<=me&&e.end>=ms&&e.type!=='holiday');
+  if(!confirm(evs.length+'건을 구글캘린더(기본 캘린더)에 등록/갱신할까요?'))return;
+  slog('구글캘린더 등록 중…');
+  try{const r=await gas({action:'calendar',events:evs.map(e=>({id:e.id,title:(e.vp?'★':'')+e.title,start:e.start,end:e.end,allDay:e.allDay!==false,startTime:e.startTime,endTime:e.endTime,desc:calDesc(e)}))});slog(r.ok?'완료 · 신규 '+r.created+'건, 갱신 '+r.updated+'건':'실패: '+(r.error||''))}catch(e){slog('실패: '+e.message)}
+}
+function exportICS(){
+  const y=cur.getFullYear(),m=cur.getMonth();const ms=fmt(new Date(y,m,1)),me=fmt(new Date(y,m+1,0));
+  const evs=DB.events.filter(e=>visible(e)&&e.start<=me&&e.end>=ms);
+  const d8=s=>s.replace(/-/g,'');const esc2=s=>String(s||'').replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MegaGen G2G3//KO\r\n';
+  evs.forEach(e=>{ics+='BEGIN:VEVENT\r\nUID:'+e.id+'@g2g3\r\nSUMMARY:'+esc2(e.title)+'\r\n';
+    if(e.allDay===false&&e.startTime){ics+='DTSTART:'+d8(e.start)+'T'+e.startTime.replace(':','')+'00\r\nDTEND:'+d8(e.end)+'T'+(e.endTime||e.startTime).replace(':','')+'00\r\n'}else{ics+='DTSTART;VALUE=DATE:'+d8(e.start)+'\r\nDTEND;VALUE=DATE:'+d8(addD(e.end,1))+'\r\n'}
+    ics+='DESCRIPTION:'+esc2(calDesc(e))+'\r\nEND:VEVENT\r\n'});
+  ics+='END:VCALENDAR\r\n';
+  dl(new Blob([ics],{type:'text/calendar'}),'G2G3_'+y+'-'+String(m+1).padStart(2,'0')+'.ics');
+}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function exportJSON(){dl(new Blob([JSON.stringify(DB,null,1)],{type:'application/json'}),'G2G3_schedule_backup_'+TODAY+'.json')}
+function importJSON(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.events)throw new Error('events 없음');if(!confirm(d.events.length+'건으로 현재 데이터를 교체할까요?'))return;DB=migrateOld(d);if(!DB.notes)DB.notes={};persist();render();toast('복원 완료')}catch(e){toast('복원 실패: '+e.message)}};r.readAsText(f)}
+function resetSeed(){if(!confirm('엑셀(2026.09.08 updated) 기준 초기 일정 '+SEED.length+'건으로 되돌립니다. 현재 입력한 내용은 사라집니다. 계속할까요?'))return;DB={events:JSON.parse(JSON.stringify(SEED)),notes:{},updatedAt:''};persist();render();toast('초기화 완료')}
+
+/* ===================== 시작 ===================== */
+load();
+selWeek=weekStartOf(TODAY);
+render();
+if(SET.gasUrl)cloudLoad(false);
+</script>
+</body>
+</html>
