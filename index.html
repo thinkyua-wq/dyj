@@ -999,7 +999,7 @@ async function cloudSave(manual){
     }
   }catch(e){}
   hdrStat('📋 시트 저장 중…');
-  try{const r=await gas({action:'save',data:sheetSafe(DB)});keepSheetUrl(r);if(r.ok){hdrStat();if(manual){slog('저장 완료');toast('구글시트에 저장했습니다')}}else{hdrStat('📋 시트 저장 실패');slog('저장 실패: '+(r.error||''))}}catch(e){hdrStat('📋 시트 저장 실패');if(manual)slog('저장 실패: '+e.message)}
+  try{const r=await gas({action:'save',data:sheetSafe(DB)});keepSheetUrl(r);if(r&&r.blocked){hdrStat('');toast('시트 보호: '+(r.msg||'대량 삭제 차단'));if(manual)slog(r.msg||'');return}if(r.ok){hdrStat();if(manual){slog('저장 완료');toast('구글시트에 저장했습니다')}}else{hdrStat('📋 시트 저장 실패');slog('저장 실패: '+(r.error||''))}}catch(e){hdrStat('📋 시트 저장 실패');if(manual)slog('저장 실패: '+e.message)}
 }
 async function cloudLoad(manual){
   if(!SET.gasUrl){if(manual){toast('먼저 ⚙ 설정에서 구글시트를 연결하세요');openSettings()}return;}
