@@ -245,6 +245,12 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
 .tbox .tt button{flex-grow:1;height:33px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:12px}
 .tbox .tt button.on{background:var(--vpc);border-color:var(--vpc);color:#fff;font-weight:700}
 .att{display:flex;flex-direction:column;gap:4px}
+.att{display:flex;flex-direction:column;gap:6px}
+.imgatt{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#FAFAF8}
+.imgatt img{display:block;width:100%;max-height:220px;object-fit:contain;background:#F0EFEA;cursor:zoom-in}
+.imgatt .cap{display:flex;align-items:center;gap:6px;padding:5px 8px;font-size:11px;color:var(--ink2)}
+.imgatt .cap span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.imgatt .cap button{margin-left:auto;border:0;background:transparent;color:var(--red);font-size:11px;cursor:pointer;padding:2px 4px}
 .att a{display:flex;align-items:center;gap:6px;padding:7px 10px;background:#fff;border:1px solid var(--line);border-radius:6px;font-size:12px;text-decoration:none;color:var(--teal)}
 .att a .x{margin-left:auto;color:var(--red);font-weight:700;padding:0 4px}
 .panel .pf{margin-top:auto;display:flex;gap:8px;padding:13px 16px;border-top:1px solid var(--line2);position:sticky;bottom:0;background:#fff}
@@ -284,7 +290,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
       
       <button class="ibtn on" id="tabMonth" onclick="setTab('month')">월간</button>
       <button class="ibtn" id="tabYear" onclick="setTab('year')">연간</button>
-      <button class="ibtn" id="calBtn" onclick="toggleMiniCal()" title="날짜 선택">📅</button><button class="ibtn" onclick="openSheet()" title="구글시트 열기">📋</button><button class="ibtn" onclick="openSettings()" title="설정 · 클라우드">⚙</button>
+      <button class="ibtn" id="calBtn" onclick="toggleMiniCal()" title="날짜 선택">📅</button><button class="ibtn" onclick="openSheet()" title="구글시트 열기">📋</button><button class="ibtn" onclick="cloudLoad(true)" title="구글시트에서 불러오기">⬇</button><button class="ibtn" onclick="cloudSave(true)" title="구글시트에 저장">⬆</button><button class="ibtn" onclick="openSettings()" title="설정 · 클라우드">⚙</button>
       <button class="ibtn primary" onclick="openEvent(null)">+ 추가</button>
       <div class="mcal" id="miniCal" style="display:none"></div>
     </div>
@@ -356,12 +362,8 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
         <div id="repUntil" style="display:none;margin-top:5px"><span class="lab">반복 종료일</span><input id="e_until" type="date"></div>
       </div>
       <div class="f"><label for="e_memo">출장 아젠다</label><textarea id="e_memo" placeholder="방문 목적 · 미팅 대상 · 안건 (이미지 붙여넣기 Ctrl+V 가능)" onpaste="pasteImg(event)"></textarea></div>
-      <div class="f"><div class="lab">첨부 · 이미지 (e-티켓, 사진, 여정표)</div>
+      <div class="f"><div class="lab">이미지 첨부 (아젠다 칸에서 Ctrl+V 붙여넣기)</div>
         <div class="att" id="attList"></div>
-        <div style="display:flex;gap:6px;margin-top:4px">
-          <label class="ibtn" style="display:inline-flex;align-items:center">파일·이미지 업로드<input type="file" id="attFile" multiple accept="image/*,.pdf,.docx,.xlsx" style="display:none" onchange="uploadAtt(this.files)"></label>
-          <button class="ibtn" onclick="addLink()">링크 추가</button>
-        </div>
         <div id="attHint" style="font-size:11px;color:var(--mute)"></div>
       </div>
     </div>
@@ -804,7 +806,7 @@ function openEvent(id,date,st0,et0,typ0,vp0){
   setTravelOpen(isTravel(e)||editAtt.length>0);
   v('e_rep','none');v('e_until',addD(e.start,90));syncRep();
   toggleTime();syncSide();
-  document.getElementById('attHint').textContent=SET.gasUrl?'파일은 드라이브 G2G3일정/첨부 폴더에 저장됩니다':'파일 업로드는 설정에서 Apps Script 연결 후 가능 · 지금은 링크 붙여넣기만';
+  document.getElementById('attHint').textContent=SET.gasUrl?'파일은 드라이브 G2G3일정/첨부 폴더에 저장됩니다':'이미지는 바로 보입니다 · 드라이브 저장은 Apps Script 연결 시';
   document.getElementById('ovEvent').classList.add('show');
 }
 function v(id,val){document.getElementById(id).value=val}
@@ -817,24 +819,77 @@ function toggleTime(){document.getElementById('timeRow').style.display=g('e_alld
 function setTravelOpen(open){document.getElementById('travelBox').style.display=open?'':'none';document.getElementById('tglTravel').classList.toggle('open',open)}
 function toggleTravel(){setTravelOpen(document.getElementById('travelBox').style.display==='none')}
 function setTerm(t){editTerm=t;document.getElementById('tm_T1').classList.toggle('on',t==='T1');document.getElementById('tm_T2').classList.toggle('on',t==='T2-3');document.getElementById('tm_x').classList.toggle('on',t==='')}
-function renderAtt(){document.getElementById('attList').innerHTML=editAtt.map((a,i)=>'<a href="'+esc(a.url)+'" target="_blank">'+(/\.(png|jpe?g|gif|webp)$/i.test(a.name)?'🖼':'📎')+' '+esc(a.name)+'<span class="x" onclick="event.preventDefault();editAtt.splice('+i+',1);renderAtt()">×</span></a>').join('')||'<span style="font-size:11px;color:#B5B8BD">첨부 없음</span>'}
+function isImg(a){return /^data:image/.test(a.url||'')||/\.(png|jpe?g|gif|webp)$/i.test(a.name||'')||/thumbnail\?id=/.test(a.url||'')}
+function renderAtt(){
+  const box=document.getElementById('attList');
+  if(!editAtt.length){box.innerHTML='<span style="font-size:11px;color:#B5B8BD">\ucca8\ubd80 \uc5c6\uc74c \u00b7 \uc774\ubbf8\uc9c0\ub97c \ubcf5\uc0ac\ud574 Ctrl+V\ub85c \ubd99\uc5ec\ub123\uc73c\uc138\uc694</span>';return}
+  let h='';
+  editAtt.forEach((a,i)=>{
+    if(isImg(a)){
+      h+='<div class="imgatt"><img src="'+esc(a.url)+'" alt="'+esc(a.name)+'" onclick="openImg('+i+')">'
+       + '<div class="cap"><span>'+esc(a.name)+(a.pending?' <b style="color:var(--g3t)">\uc5c5\ub85c\ub4dc \uc911...</b>':'')+'</span>'
+       + '<button onclick="editAtt.splice('+i+',1);renderAtt()">\uc0ad\uc81c</button></div></div>';
+    }else{
+      h+='<a href="'+esc(a.url)+'" target="_blank">\ud83d\udcce '+esc(a.name)
+       + '<span class="x" onclick="event.preventDefault();editAtt.splice('+i+',1);renderAtt()">\u00d7</span></a>';
+    }
+  });
+  box.innerHTML=h;
+}
+function openImg(i){const a=editAtt[i];if(!a)return;
+  const w=window.open('');if(w)w.document.write('<title>'+a.name+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center"><img src="'+a.url+'" style="max-width:100%;max-height:100vh"></body>');}
 function addLink(){const u=prompt('구글드라이브 파일 링크(공유 링크)를 붙여넣으세요');if(!u)return;const n=prompt('표시 이름','e-티켓.pdf')||'첨부';editAtt.push({name:n,url:u});renderAtt()}
 function pasteImg(ev){
   const items=(ev.clipboardData||{}).items||[];
   const imgs=[];
   for(const it of items){if(it.type&&it.type.indexOf('image')===0){const f=it.getAsFile();if(f)imgs.push(f)}}
-  if(imgs.length){ev.preventDefault();uploadAtt(imgs)}
+  if(imgs.length){ev.preventDefault();imgs.forEach(addImage)}
+}
+function shrink(file,maxW){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onload=()=>{const im=new Image();
+      im.onload=()=>{
+        const sc=Math.min(1,maxW/im.width);
+        const c=document.createElement('canvas');
+        c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        res(c.toDataURL('image/jpeg',0.8));
+      };
+      im.onerror=rej;im.src=fr.result;
+    };
+    fr.onerror=rej;fr.readAsDataURL(file);
+  });
+}
+async function addImage(f){
+  const name=(f.name&&f.name!=='image.png')?f.name:('\ubd99\uc5ec\ub123\uae30_'+new Date().toISOString().slice(5,16).replace(/[-T:]/g,'')+'.jpg');
+  let thumb;
+  try{thumb=await shrink(f,1000)}catch(e){toast('\uc774\ubbf8\uc9c0\ub97c \uc77d\uc9c0 \ubabb\ud588\uc2b5\ub2c8\ub2e4');return}
+  const item={name:name,url:thumb,pending:!!SET.gasUrl};
+  editAtt.push(item);renderAtt();
+  if(!SET.gasUrl)return;
+  try{
+    const b64=await new Promise((r,j)=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(',')[1]);fr.onerror=j;fr.readAsDataURL(f)});
+    const res=await gas({action:'upload',name:name,mime:f.type||'image/png',data:b64});
+    if(res&&res.ok&&res.fileId){
+      item.fileId=res.fileId;item.link=res.url;
+      item.url='https://drive.google.com/thumbnail?id='+res.fileId+'&sz=w1000';
+      delete item.pending;renderAtt();toast('\ub4dc\ub77c\uc774\ube0c \uc5c5\ub85c\ub4dc \uc644\ub8cc');
+    }else{delete item.pending;renderAtt();toast('\uc5c5\ub85c\ub4dc \uc2e4\ud328 \u00b7 \uc774\ubbf8\uc9c0\ub294 \uc571\uc5d0\ub9cc \uc800\uc7a5\ub429\ub2c8\ub2e4')}
+  }catch(e){delete item.pending;renderAtt();toast('\uc5c5\ub85c\ub4dc \uc2e4\ud328 \u00b7 \uc571\uc5d0\ub9cc \uc800\uc7a5')}
 }
 async function uploadAtt(files){
-  if(!SET.gasUrl){toast('먼저 설정에서 Apps Script를 연결하세요');return}
   for(const f of files){
-    if(!f.name||f.name==='image.png'){try{Object.defineProperty(f,'name',{value:'붙여넣기_'+Date.now()+'.png'})}catch(e){}}
-    if(f.size>8*1024*1024){toast(f.name+': 8MB 초과');continue}
-    const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f)});
-    toast(f.name+' 업로드 중…');
-    try{const r=await gas({action:'upload',name:f.name,mime:f.type||'application/octet-stream',data:b64});if(r.ok){editAtt.push({name:f.name,url:r.url,fileId:r.fileId});renderAtt();toast('업로드 완료')}else toast('업로드 실패: '+(r.error||''))}catch(e){toast('업로드 실패: '+e.message)}
+    if((f.type||'').indexOf('image')===0){await addImage(f);continue}
+    if(!SET.gasUrl){toast('\uc774\ubbf8\uc9c0 \uc678 \ud30c\uc77c\uc740 \uc124\uc815\uc5d0\uc11c Apps Script \uc5f0\uacb0 \ud6c4 \uac00\ub2a5');continue}
+    if(f.size>8*1024*1024){toast(f.name+': 8MB \ucd08\uacfc');continue}
+    const b64=await new Promise((r,j)=>{const fr=new FileReader();fr.onload=()=>r(fr.result.split(',')[1]);fr.onerror=j;fr.readAsDataURL(f)});
+    toast(f.name+' \uc5c5\ub85c\ub4dc \uc911...');
+    try{const res=await gas({action:'upload',name:f.name,mime:f.type||'application/octet-stream',data:b64});
+      if(res.ok){editAtt.push({name:f.name,url:res.url,fileId:res.fileId});renderAtt();toast('\uc5c5\ub85c\ub4dc \uc644\ub8cc')}
+      else toast('\uc5c5\ub85c\ub4dc \uc2e4\ud328')}catch(e){toast('\uc5c5\ub85c\ub4dc \uc2e4\ud328: '+e.message)}
   }
-  document.getElementById('attFile').value='';
+  const el=document.getElementById('attFile');if(el)el.value='';
 }
 function collectTravel(){
   const t={mode:g('tr_mode'),no:g('tr_no').trim(),from:g('tr_from').trim(),fromTime:g('tr_fromTime'),to:g('tr_to').trim(),toTime:g('tr_toTime'),terminal:editTerm,pnr:g('tr_pnr').trim()};
@@ -909,13 +964,13 @@ function saveSettings(){SET.gasUrl=g('s_url').trim();SET.autoCloud=document.getE
 function slog(m){const el=document.getElementById('setLog');el.textContent=(new Date().toLocaleTimeString()+' '+m+'\n')+el.textContent}
 async function testCloud(){SET.gasUrl=g('s_url').trim();if(!SET.gasUrl){slog('URL이 비어 있습니다');return}try{const r=await gas({action:'ping'});keepSheetUrl(r);slog(r.ok?'연결 성공 · 폴더: '+(r.folder||'')+' · 데이터 '+(r.hasData?'있음':'없음'):'실패: '+JSON.stringify(r))}catch(e){slog('연결 실패: '+e.message)}}
 async function cloudSave(manual){
-  if(!SET.gasUrl)return;
+  if(!SET.gasUrl){if(manual){toast('먼저 ⚙ 설정에서 구글시트를 연결하세요');openSettings()}return;}
   if(!DB.events.length&&!manual){hdrStat('빈 데이터 → 저장 생략');return}
   hdrStat('📋 시트 저장 중…');
   try{const r=await gas({action:'save',data:DB});keepSheetUrl(r);if(r.ok){hdrStat();if(manual){slog('저장 완료');toast('구글시트에 저장했습니다')}}else{hdrStat('📋 시트 저장 실패');slog('저장 실패: '+(r.error||''))}}catch(e){hdrStat('📋 시트 저장 실패');if(manual)slog('저장 실패: '+e.message)}
 }
 async function cloudLoad(manual){
-  if(!SET.gasUrl)return;
+  if(!SET.gasUrl){if(manual){toast('먼저 ⚙ 설정에서 구글시트를 연결하세요');openSettings()}return;}
   try{const r=await gas({action:'load'});keepSheetUrl(r);if(r.ok&&r.data&&r.data.events){
     if(manual&&DB.updatedAt&&r.data.updatedAt&&r.data.updatedAt<DB.updatedAt&&!confirm('클라우드 데이터('+r.data.updatedAt.slice(0,16)+')가 이 기기('+DB.updatedAt.slice(0,16)+')보다 오래됐습니다. 그래도 덮어쓸까요?'))return;
     DB=migrateOld(r.data);if(!DB.notes)DB.notes={};DB.seedVer=SEED_VER;localStorage.setItem(LS_KEY,JSON.stringify(DB));render();if(manual){slog('불러오기 완료 · '+DB.events.length+'건');toast('구글시트에서 불러왔습니다')}
