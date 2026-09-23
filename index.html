@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>G2/G3 일정 · 정대영 부사장님</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1E242C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="G2G3일정">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAEqklEQVR4nO3dPW7bWBiGUcoI4F2kClIM0s9Cps5evJfUs5DpjRQDV96FK08xUKAkssy/+12S7zkLMGXle+4lZYY6DRvz8dOX196vgXaenx5PvV/Dpa4vxrAzDH2jKD+woeeW6hjKDmbwmaIqhOYHMfgs0TqEZj/c4LOmViGs/kMNPi2tHcLdmj/M8NPa2jO2Sk0Gnx7W2A0W7wCGn17WmL1FARh+els6g7MDMPxsxZJZnBWA4Wdr5s7k5AAMP1s1ZzYnBWD42bqpMzo6AMPPXkyZ1VEBGH72ZuzMvhuA4WevxszuqrdCwN7cDMDqz969N8NvBmD4OYpbs+wUiGhXA7D6czRvzbQdgGi/BWD156iuzbYdgGg/BWD15+h+nXE7ANF+BGD1J8XlrNsBiPah14Ef7l96HZoNeni573Lc0zDUnv4YfG6pDOH56fFUtgMYfMY4z0lVCCXXAIafqapmxkUw0ZoHYPVnrorZufP5P6k+fvry2nQHsPqzVOsZcg1ANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAERr+3+COz3ujuNoPUN2AKK1fy6QXYCZKmbHDkC0mmeD2gWYqGpmTtVPhvOwLG6pXizLAzgTApe6fUGGZ4OSzEUw0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEO1D1YFe//hadShmOn3/1vsllGt+M5zB35+kEJwCEa1pAFb/fUr6d7MDEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEK1pAEn3lR9J0r+bHYBoZY9HT7rHfK+SVv4z3w9ANKdARBMA0QRANAEQTQBEEwDRyh6N+Pefn6sOtSt//fNv75cQrfnfAQz+OELowykQ0ZoGYPUfz3vVhx2AaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaE0DcI/7eN6rPuwARCt7Mpz73a+z8vfl0YhEcwpENAEQTQBEEwDRBEA0ARCt7NGIviKprcSvN1pD878DGPxaQpjGKRDRmgZg9a/nPZ/GDkA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEC0pgG4N72e93waOwDRyp4M5z71tqz883g0ItGcAhFNAEQTANEEQDQBEO3u+enx1PtFQA/PT4+nskcjPty/VB2qzMPLfe+XwELNAzji4J+dfzch7JdrAKI1DeDIq/+llN/ziO6G4f+Lgd4vBCqdZ94pENEEQLQfATgNIsXlrNsBiPZTAHYBju7XGbcDEO23AOwCHNW12bYDEO1qAHYBjuatmbYDEO3NAOwCHMWtWb65A4iAvXtvhtveDRpyn3zK73lE7wZgF2Cvxszu6OFe+gS5I94zb+XfrrEL96TV3WMU2YMpZy2TrgGcDrF1U2d08kWwCNiqObM561MgEbA1c2dy9segImArlszior8DiIDels7g4j+EiYBe1pi9VYfXx6RUWHPRXfVWCLsBra09Y80G1m7Amlotrs1XbCGwROuzirJTFiEwRdXpdPk5uxC4pfo6sutFqxgYhr4fnmzuUxtRHNvWPin8DzzEPXZt376KAAAAAElFTkSuQmCC">
+
 <style>
 :root{
   --bg:#F4F3F0; --card:#FFFFFF; --line:#D8D6D0; --line2:#EBE9E4;
@@ -677,26 +685,39 @@ function renderWeek(ws){
     .forEach(e=>{
       const c=clip(e);if(c.si<0||c.ei<0)return;
       if(e.type==='g2event'||e.type==='g3event'){evtItems.push({e,si:c.si,ei:c.ei,h:1,card:false});return}
-      const card=isTravel(e);
-      tripItems.push({e,si:c.si,ei:c.ei,h:1,card});
+      if(isTravel(e)){tripItems.push({e,si:c.si,ei:c.ei,h:1,card:true});return}
+      // \ucd9c\uc7a5\u00b7\ud68c\uc758\ub294 \ub0a0\uc9dc\ubcc4 \uce78\uc73c\ub85c
     });
   let h='<div class="wk" onclick="event.stopPropagation()"><div class="head"><span class="h">'+(nd===1?d0.replace(/-/g,'.')+' ('+dn[pd(d0).getDay()]+')':(nd<7?d0.slice(5).replace('-','.')+'('+dn[pd(d0).getDay()]+') ~ '+dl.slice(5).replace('-','.')+'('+dn[pd(dl).getDay()]+')':'\uc8fc\uac04 \u00b7 '+d0.slice(5).replace('-','.')+'('+dn[pd(d0).getDay()]+') ~ '+dl.slice(5).replace('-','.')+'('+dn[pd(dl).getDay()]+')'))+'</span><span style="font-size:11px;color:var(--mute)">\uc67c\ucabd=\ubd80\uc0ac\uc7a5\ub2d8 \uc77c\uc815 \u00b7 \uc624\ub978\ucabd=G2/G3 \ud68c\uc758 \u00b7 \ube48 \uce78 \ud074\ub9ad \uc785\ub825</span><span class="r"><button class="ibtn" onclick="moveWeek(-1)">\u25c0 \uc774\uc804</button><span class="stepper"><button onclick="setWkDays(wkDays-1)" title="\uc77c\uc218 \uc904\uc774\uae30">\u2212</button><input type="number" min="1" max="7" value="'+wkDays+'" onchange="setWkDays(this.value)" onclick="event.stopPropagation()"><span class="u">\uc77c</span><button onclick="setWkDays(wkDays+1)" title="\uc77c\uc218 \ub298\ub9ac\uae30">\uff0b</button></span><button class="ibtn" onclick="moveWeek(1)">\ub2e4\uc74c \u25b6</button><button class="ibtn" onclick="exportWeekImage()">\uc774\ubbf8\uc9c0</button><button class="ibtn" onclick="selWeek=null;renderMonth()">\ub2eb\uae30 \u00d7</button></span></div>';
   const COLS=(nd<7?'56px repeat('+nd+',minmax(0,1fr))':'56px repeat(5,minmax(0,1fr)) repeat(2,minmax(0,0.55fr))');
   h+='<div class="wkwrap"><div class="wkin" style="--nd:'+nd+';--nr:'+nr+';--cols:'+COLS+'">';
-  h+=rowHtml('\ucd9c\uc7a5',tripItems);
+  h+=rowHtml('\uc774\ub3d9',tripItems);
   // \uc694\uc77c \ud5e4\ub354 + \ud68c\uc758 \ucd94\uac00 \ubc84\ud2bc
   h+='<div class="wkgrid rowH"><div></div>';
   days.forEach(d=>{const hol=holOf(d);const dd=pd(d);
     h+='<div'+(wkDays===7?' style="cursor:pointer" onclick="pickDay(\''+d+'\')"':'')+' title="'+(hol?esc(hol.title):'')+'"><div class="dn'+(dd.getDay()===0||dd.getDay()===6?' sun':'')+(d===TODAY?' today':'')+'">'+dn[dd.getDay()]+' '+(hol?d.slice(5,7)+'.<span class="holc">'+Number(d.slice(8))+'</span>':d.slice(5).replace('-','.'))+(d===TODAY?' (\uc624\ub298)':'')+'</div>';
     const wknd=(dd.getDay()===0||dd.getDay()===6);
-    h+=wknd?'<div class="hsplit one"><div class="vpx">\ubd80\uc0ac\uc7a5\ub2d8 \uc77c\uc815</div></div>':'<div class="hsplit"><div class="vpx">\ubd80\uc0ac\uc7a5\ub2d8 \uc77c\uc815</div><div class="team">G2/G3 \ud68c\uc758</div></div>';
+    const hasMeet=DB.events.some(e=>visible(e)&&!e.vp&&e.allDay===false&&e.start<=d&&e.end>=d);
+    h+=(wknd||!hasMeet)?'<div class="hsplit one"><div class="vpx">\ubd80\uc0ac\uc7a5\ub2d8 \uc77c\uc815</div></div>':'<div class="hsplit"><div class="vpx">\ubd80\uc0ac\uc7a5\ub2d8 \uc77c\uc815</div><div class="team">G2/G3 \ud68c\uc758</div></div>';
     h+='</div>'});
   h+='</div>';
+  // \ub0a0\uc9dc\ubcc4 \ucd9c\uc7a5\u00b7\uc885\uc77c \uc77c\uc815 (\ubd80\uc0ac\uc7a5\ub2d8 \uce78)
+  let anyDay=false;
+  const dayAll=days.map(d=>DB.events.filter(e=>visible(e)&&e.allDay!==false&&!isTravel(e)&&e.type!=='holiday'&&e.type!=='g2event'&&e.type!=='g3event'&&e.start<=d&&e.end>=d).sort((a,b)=>PRI[a.type]-PRI[b.type]));
+  dayAll.forEach(a=>{if(a.length)anyDay=true});
+  if(anyDay){
+    h+='<div class="wkgrid rowA"><div class="lab">\ucd9c\uc7a5</div>';
+    days.forEach((d,i)=>{h+='<div>';
+      dayAll[i].forEach(e=>{h+='<div class="ev '+e.type+'" onclick="openEvent(\''+e.id+'\')" title="'+esc(e.title)+'">'+esc(e.title)+'</div>'});
+      h+='</div>'});
+    h+='</div>';
+  }
   // \uc2dc\uac04 \uadf8\ub9ac\ub4dc
   h+='<div class="timegrid">';
   for(let r=0;r<nr;r++){const hr=H0+Math.floor(r/2),half=r%2;const lab=r===nr-1?'\uc57c\uac04':(half?'':hr+':00');h+='<div class="tl'+((hr===12||hr===18)&&!half?' h':'')+'" style="grid-row:'+(r+1)+'">'+lab+'</div>'}
   days.forEach((d,ci)=>{const hol=holOf(d);
-    const wk2=(pd(d).getDay()===0||pd(d).getDay()===6);
+    const hasM=DB.events.some(e=>visible(e)&&!e.vp&&e.allDay===false&&e.start<=d&&e.end>=d);
+    const wk2=(pd(d).getDay()===0||pd(d).getDay()===6)||!hasM;
     h+='<div class="daycol'+(wk2?' solo':'')+(d===TODAY?' today':'')+'" style="grid-column:'+(ci+2)+';grid-row:1/'+(nr+1)+';cursor:copy" title="\ube48 \uce78 \ud074\ub9ad: \uadf8 \uc2dc\uac04 \ud68c\uc758 \uc785\ub825" onclick="addAt(event,\''+d+'\')">';
     for(let r=1;r<nr;r+=2)h+='<div class="hl" style="top:'+(r*15)+'px"></div>';
     const toRow=t=>{const [hh,mm]=t.split(':').map(Number);return Math.max(0,Math.min(nr-1,(hh-H0)*2+(mm>=30?1:0)))};
@@ -926,10 +947,11 @@ function importJSON(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{c
 function resetSeed(){if(!confirm('엑셀(2026.09.08 updated) 기준 초기 일정 '+SEED.length+'건으로 되돌립니다. 현재 입력한 내용은 사라집니다. 계속할까요?'))return;DB={events:JSON.parse(JSON.stringify(SEED)),notes:{},updatedAt:''};persist();render();toast('초기화 완료')}
 
 /* ===================== 시작 ===================== */
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})})}
 load();
-selWeek=weekStartOf(TODAY);
+selWeek=null;
 if(SET.wkDays)wkDays=Math.max(1,Math.min(7,Number(SET.wkDays)||7));
-if(wkDays<7)selDay=TODAY;
+selDay=TODAY;
 render();
 if(SET.gasUrl)cloudLoad(false);
 </script>
