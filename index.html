@@ -241,6 +241,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
 .tgl.open .ar{transform:rotate(90deg)}
 .tbox{display:flex;flex-direction:column;gap:8px;padding:12px;background:#FAFAF8;border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px}
 .tbox .f input,.tbox .f select{height:35px}
+.tbox .f.fs input{max-width:110px}
 .tbox .tt{display:flex;gap:4px}
 .tbox .tt button{flex-grow:1;height:33px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:12px}
 .tbox .tt button.on{background:var(--vpc);border-color:var(--vpc);color:#fff;font-weight:700}
@@ -251,6 +252,12 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
 .imgatt .cap{display:flex;align-items:center;gap:6px;padding:5px 8px;font-size:11px;color:var(--ink2)}
 .imgatt .cap span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .imgatt .cap button{margin-left:auto;border:0;background:transparent;color:var(--red);font-size:11px;cursor:pointer;padding:2px 4px}
+.imgatt.saved{border-color:#C9C7C1;background:#EFEEE9}
+.imgatt.saved .cap{color:var(--mute)}
+.imgatt.saved img{background:#E6E4DE}
+.imgatt .s-ok{color:var(--mute);font-weight:700}
+.imgatt .s-pend{color:var(--g3t);font-weight:700}
+.imgatt .s-loc{color:var(--g2t);font-weight:700}
 .att a{display:flex;align-items:center;gap:6px;padding:7px 10px;background:#fff;border:1px solid var(--line);border-radius:6px;font-size:12px;text-decoration:none;color:var(--teal)}
 .att a .x{margin-left:auto;color:var(--red);font-weight:700;padding:0 4px}
 .panel .pf{margin-top:auto;display:flex;gap:8px;padding:13px 16px;border-top:1px solid var(--line2);position:sticky;bottom:0;background:#fff}
@@ -342,12 +349,11 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
           <div class="g2c">
             <div class="f"><label for="tr_mode">수단</label><select id="tr_mode"><option>항공</option><option>기차(KTX/고속철)</option><option>차량</option><option>기타</option></select></div>
             <div class="f"><label for="tr_no">편명 / 열차번호</label><input id="tr_no" placeholder="KE893"></div>
-            <div class="f"><label for="tr_from">출발지</label><input id="tr_from" placeholder="인천(ICN)"></div>
+            <div class="f fs"><label for="tr_from">출발</label><input id="tr_from" placeholder="ICN"></div>
             <div class="f"><label for="tr_fromTime">출발 시각</label><input id="tr_fromTime" type="time" step="300"></div>
-            <div class="f"><label for="tr_to">도착지</label><input id="tr_to" placeholder="상해(PVG)"></div>
+            <div class="f fs"><label for="tr_to">도착</label><input id="tr_to" placeholder="PVG"></div>
             <div class="f"><label for="tr_toTime">도착 시각</label><input id="tr_toTime" type="time" step="300"></div>
-            <div class="f"><div class="lab">출발 터미널</div><div class="tt"><button id="tm_T1" onclick="setTerm('T1')">T1</button><button id="tm_T2" onclick="setTerm('T2-3')">T2-3</button><button id="tm_x" onclick="setTerm('')">해당없음</button></div></div>
-            <div class="f"><label for="tr_pnr">예약번호 / 좌석</label><input id="tr_pnr"></div>
+            <div class="f fs"><label for="tr_term">터미널</label><input id="tr_term" placeholder="T2"></div>
           </div>
         </div>
       </div>
@@ -415,7 +421,7 @@ let DB={events:[],notes:{},updatedAt:''};
 let SET={gasUrl:'',autoCloud:true,weekend:false,h0:8,h1:21};
 let F={g2trip:true,g3trip:true,g2meet:true,g3meet:true,g2event:true,g3event:true};
 let cur=new Date(); cur=new Date(cur.getFullYear(),cur.getMonth(),1);
-let selWeek=null, view='month', editing=null, editAtt=[], editTerm='';
+let selWeek=null, view='month', editing=null, editAtt=[];
 let wkDays=7, selDay=null;
 const TODAY=fmt(new Date());
 
@@ -462,7 +468,7 @@ function load(){
     }
   }catch(e){DB={events:JSON.parse(JSON.stringify(SEED)),notes:{},updatedAt:''}}
 }
-let cloudTimer=null;
+let cloudTimer=null, loadedOk=false;
 function persist(){
   DB.updatedAt=new Date().toISOString();
   try{localStorage.setItem(LS_KEY,JSON.stringify(DB))}catch(e){toast('로컬 저장 실패: '+e.message)}
@@ -801,8 +807,8 @@ function openEvent(id,date,st0,et0,typ0,vp0){
   v('e_title',e.title);v('e_start',e.start);v('e_end',e.end);v('e_allday',e.allDay===false?'0':'1');v('e_st',e.startTime||'');v('e_et',e.endTime||'');
   v('e_type',e.type||'g2trip');v('e_region',e.region||'');v('e_memo',e.memo||'');
   document.getElementById('e_vp').checked=!!e.vp;
-  const t=e.travel||{};v('tr_mode',t.mode||'항공');v('tr_no',t.no||'');v('tr_from',t.from||'');v('tr_fromTime',t.fromTime||'');v('tr_to',t.to||'');v('tr_toTime',t.toTime||'');v('tr_pnr',t.pnr||'');
-  setTerm(t.terminal||'');editAtt=JSON.parse(JSON.stringify(e.attachments||[]));renderAtt();
+  const t=e.travel||{};v('tr_mode',t.mode||'항공');v('tr_no',t.no||'');v('tr_from',t.from||'');v('tr_fromTime',t.fromTime||'');v('tr_to',t.to||'');v('tr_toTime',t.toTime||'');v('tr_term',t.terminal||'');
+editAtt=JSON.parse(JSON.stringify(e.attachments||[]));renderAtt();
   setTravelOpen(isTravel(e)||editAtt.length>0);
   v('e_rep','none');v('e_until',addD(e.start,90));syncRep();
   toggleTime();syncSide();
@@ -818,7 +824,6 @@ function setSide(sd){const t=g('e_type');if(t==='holiday')return;v('e_type',sd+t
 function toggleTime(){document.getElementById('timeRow').style.display=g('e_allday')==='0'?'':'none'}
 function setTravelOpen(open){document.getElementById('travelBox').style.display=open?'':'none';document.getElementById('tglTravel').classList.toggle('open',open)}
 function toggleTravel(){setTravelOpen(document.getElementById('travelBox').style.display==='none')}
-function setTerm(t){editTerm=t;document.getElementById('tm_T1').classList.toggle('on',t==='T1');document.getElementById('tm_T2').classList.toggle('on',t==='T2-3');document.getElementById('tm_x').classList.toggle('on',t==='')}
 function isImg(a){return /^data:image/.test(a.url||'')||/\.(png|jpe?g|gif|webp)$/i.test(a.name||'')||/thumbnail\?id=/.test(a.url||'')}
 function renderAtt(){
   const box=document.getElementById('attList');
@@ -826,8 +831,12 @@ function renderAtt(){
   let h='';
   editAtt.forEach((a,i)=>{
     if(isImg(a)){
-      h+='<div class="imgatt"><img src="'+esc(a.url)+'" alt="'+esc(a.name)+'" onclick="openImg('+i+')">'
-       + '<div class="cap"><span>'+esc(a.name)+(a.pending?' <b style="color:var(--g3t)">\uc5c5\ub85c\ub4dc \uc911...</b>':'')+'</span>'
+      const st=a.pending?'pending':(a.fileId?'saved':'local');
+      const stx=a.pending?'<b class="s-pend">\uc5c5\ub85c\ub4dc \uc911\u2026</b>'
+        :(a.fileId?'<b class="s-ok">\u2713 \uc800\uc7a5\ub428</b>'
+        :'<b class="s-loc">\uc774 \uae30\uae30\uc5d0\ub9cc \uc800\uc7a5</b>');
+      h+='<div class="imgatt '+st+'"><img src="'+esc(a.url)+'" alt="'+esc(a.name)+'" onclick="openImg('+i+')" onerror="imgFallback(this,\''+(a.fileId||'')+'\')">'
+       + '<div class="cap"><span>'+esc(a.name)+' '+stx+'</span>'
        + '<button onclick="editAtt.splice('+i+',1);renderAtt()">\uc0ad\uc81c</button></div></div>';
     }else{
       h+='<a href="'+esc(a.url)+'" target="_blank">\ud83d\udcce '+esc(a.name)
@@ -835,6 +844,11 @@ function renderAtt(){
     }
   });
   box.innerHTML=h;
+}
+function imgFallback(el,fid){
+  if(!fid||el.dataset.fb)return;
+  el.dataset.fb='1';
+  el.src='https://lh3.googleusercontent.com/d/'+fid+'=w1200';
 }
 function openImg(i){const a=editAtt[i];if(!a)return;
   const w=window.open('');if(w)w.document.write('<title>'+a.name+'</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center"><img src="'+a.url+'" style="max-width:100%;max-height:100vh"></body>');}
@@ -873,7 +887,7 @@ async function addImage(f){
     const res=await gas({action:'upload',name:name,mime:f.type||'image/png',data:b64});
     if(res&&res.ok&&res.fileId){
       item.fileId=res.fileId;item.link=res.url;
-      item.url='https://drive.google.com/thumbnail?id='+res.fileId+'&sz=w1000';
+      item.url='https://drive.google.com/thumbnail?id='+res.fileId+'&sz=w1200';
       delete item.pending;renderAtt();toast('\ub4dc\ub77c\uc774\ube0c \uc5c5\ub85c\ub4dc \uc644\ub8cc');
     }else{delete item.pending;renderAtt();toast('\uc5c5\ub85c\ub4dc \uc2e4\ud328 \u00b7 \uc774\ubbf8\uc9c0\ub294 \uc571\uc5d0\ub9cc \uc800\uc7a5\ub429\ub2c8\ub2e4')}
   }catch(e){delete item.pending;renderAtt();toast('\uc5c5\ub85c\ub4dc \uc2e4\ud328 \u00b7 \uc571\uc5d0\ub9cc \uc800\uc7a5')}
@@ -892,8 +906,8 @@ async function uploadAtt(files){
   const el=document.getElementById('attFile');if(el)el.value='';
 }
 function collectTravel(){
-  const t={mode:g('tr_mode'),no:g('tr_no').trim(),from:g('tr_from').trim(),fromTime:g('tr_fromTime'),to:g('tr_to').trim(),toTime:g('tr_toTime'),terminal:editTerm,pnr:g('tr_pnr').trim()};
-  return (t.no||t.from||t.to||t.fromTime||t.toTime||t.terminal||t.pnr)?t:{};
+  const t={mode:g('tr_mode'),no:g('tr_no').trim(),from:g('tr_from').trim(),fromTime:g('tr_fromTime'),to:g('tr_to').trim(),toTime:g('tr_toTime'),terminal:g('tr_term').trim(),pnr:''};
+  return (t.no||t.from||t.to||t.fromTime||t.toTime||t.terminal)?t:{};
 }
 function syncRep(){document.getElementById('repUntil').style.display=g('e_rep')==='none'?'none':''}
 function nthDow(ds){const d=pd(ds);return Math.floor((d.getDate()-1)/7)+1}
@@ -963,20 +977,41 @@ function closeSettings(){document.getElementById('ovSet').classList.remove('show
 function saveSettings(){SET.gasUrl=g('s_url').trim();SET.autoCloud=document.getElementById('s_auto').checked;SET.h0=Number(g('s_h0'))||8;SET.h1=Number(g('s_h1'))||21;localStorage.setItem(LS_SET,JSON.stringify(SET));toast('설정 저장');closeSettings();render()}
 function slog(m){const el=document.getElementById('setLog');el.textContent=(new Date().toLocaleTimeString()+' '+m+'\n')+el.textContent}
 async function testCloud(){SET.gasUrl=g('s_url').trim();if(!SET.gasUrl){slog('URL이 비어 있습니다');return}try{const r=await gas({action:'ping'});keepSheetUrl(r);slog(r.ok?'연결 성공 · 폴더: '+(r.folder||'')+' · 데이터 '+(r.hasData?'있음':'없음'):'실패: '+JSON.stringify(r))}catch(e){slog('연결 실패: '+e.message)}}
+function sheetSafe(db){
+  const c=JSON.parse(JSON.stringify(db));
+  c.events.forEach(e=>{
+    if(!e.attachments)return;
+    e.attachments=e.attachments.filter(a=>a&&a.url&&a.url.indexOf('data:')!==0)
+      .map(a=>({name:a.name,url:a.url,fileId:a.fileId||''}));
+  });
+  return c;
+}
 async function cloudSave(manual){
   if(!SET.gasUrl){if(manual){toast('먼저 ⚙ 설정에서 구글시트를 연결하세요');openSettings()}return;}
+  if(!manual&&!loadedOk){hdrStat('');return}   // 시트를 아직 못 읽었으면 자동저장 보류
   if(!DB.events.length&&!manual){hdrStat('빈 데이터 → 저장 생략');return}
+  // 대량 삭제 방지: 시트가 현재 기기보다 20건 이상 많으면 확인
+  try{
+    const chk=await gas({action:'ping'});
+    if(chk&&chk.ok&&chk.rows>DB.events.length+20){
+      const go=confirm('구글시트에는 '+chk.rows+'건이 있는데 이 기기에는 '+DB.events.length+'건뿐입니다.\n\n그대로 저장하면 시트의 '+(chk.rows-DB.events.length)+'건이 사라집니다.\n\n[취소] 를 누르고 ⬇ 불러오기를 먼저 하세요.\n\n계속 저장할까요?');
+      if(!go){hdrStat('');toast('저장을 취소했습니다 · ⬇ 로 먼저 불러오세요');return}
+    }
+  }catch(e){}
   hdrStat('📋 시트 저장 중…');
-  try{const r=await gas({action:'save',data:DB});keepSheetUrl(r);if(r.ok){hdrStat();if(manual){slog('저장 완료');toast('구글시트에 저장했습니다')}}else{hdrStat('📋 시트 저장 실패');slog('저장 실패: '+(r.error||''))}}catch(e){hdrStat('📋 시트 저장 실패');if(manual)slog('저장 실패: '+e.message)}
+  try{const r=await gas({action:'save',data:sheetSafe(DB)});keepSheetUrl(r);if(r.ok){hdrStat();if(manual){slog('저장 완료');toast('구글시트에 저장했습니다')}}else{hdrStat('📋 시트 저장 실패');slog('저장 실패: '+(r.error||''))}}catch(e){hdrStat('📋 시트 저장 실패');if(manual)slog('저장 실패: '+e.message)}
 }
 async function cloudLoad(manual){
   if(!SET.gasUrl){if(manual){toast('먼저 ⚙ 설정에서 구글시트를 연결하세요');openSettings()}return;}
   try{const r=await gas({action:'load'});keepSheetUrl(r);if(r.ok&&r.data&&r.data.events){
     if(manual&&DB.updatedAt&&r.data.updatedAt&&r.data.updatedAt<DB.updatedAt&&!confirm('클라우드 데이터('+r.data.updatedAt.slice(0,16)+')가 이 기기('+DB.updatedAt.slice(0,16)+')보다 오래됐습니다. 그래도 덮어쓸까요?'))return;
-    DB=migrateOld(r.data);if(!DB.notes)DB.notes={};DB.seedVer=SEED_VER;localStorage.setItem(LS_KEY,JSON.stringify(DB));render();if(manual){slog('불러오기 완료 · '+DB.events.length+'건');toast('구글시트에서 불러왔습니다')}
-  }else if(manual)slog(r.ok?'클라우드에 데이터가 없습니다':'실패: '+(r.error||''))}catch(e){if(manual)slog('불러오기 실패: '+e.message)}
+    DB=migrateOld(r.data);if(!DB.notes)DB.notes={};DB.seedVer=SEED_VER;
+    loadedOk=true;
+    DB.events.forEach(e=>{(e.attachments||[]).forEach(a=>{
+      const m=(a.url||'').match(/[?&]id=([\w-]+)/);if(m)a.fileId=m[1];})});localStorage.setItem(LS_KEY,JSON.stringify(DB));render();if(manual){slog('불러오기 완료 · '+DB.events.length+'건');toast('구글시트에서 불러왔습니다')}
+  }else{if(r.ok)loadedOk=true;if(manual)slog(r.ok?'클라우드에 데이터가 없습니다':'실패: '+(r.error||''))}}catch(e){if(manual)slog('불러오기 실패: '+e.message)}
 }
-function calDesc(e){const t=e.travel||{};const L=[];L.push('유형: '+TYPE_NAME[e.type]+(e.vp?' · 정부사장님 참석':''));if(e.region)L.push('지역: '+e.region);if(isTravel(e))L.push('이동: '+[t.mode,t.no,(t.from&&t.to)?t.from+' → '+t.to:'',t.fromTime?'출발 '+hhmm(t.fromTime):'',t.toTime?'도착 '+hhmm(t.toTime):'',t.terminal?'터미널 '+t.terminal:'',t.pnr?'예약 '+t.pnr:''].filter(Boolean).join(' · '));(e.attachments||[]).forEach(a=>L.push('첨부: '+a.name+' '+a.url));if(e.memo)L.push('아젠다: '+e.memo);return L.join('\n')}
+function calDesc(e){const t=e.travel||{};const L=[];L.push('유형: '+TYPE_NAME[e.type]+(e.vp?' · 정부사장님 참석':''));if(e.region)L.push('지역: '+e.region);if(isTravel(e))L.push('이동: '+[t.mode,t.no,(t.from&&t.to)?t.from+' → '+t.to:'',t.fromTime?'출발 '+hhmm(t.fromTime):'',t.toTime?'도착 '+hhmm(t.toTime):'',t.terminal?'터미널 '+t.terminal:'',''].filter(Boolean).join(' · '));(e.attachments||[]).forEach(a=>L.push('첨부: '+a.name+' '+a.url));if(e.memo)L.push('아젠다: '+e.memo);return L.join('\n')}
 async function pushCalendar(){
   if(!SET.gasUrl){slog('Apps Script 연결이 필요합니다');return}
   const y=cur.getFullYear(),m=cur.getMonth();const ms=fmt(new Date(y,m,1)),me=fmt(new Date(y,m+1,0));
@@ -1008,7 +1043,9 @@ selWeek=null;
 if(SET.wkDays)wkDays=Math.max(1,Math.min(7,Number(SET.wkDays)||7));
 selDay=TODAY;
 render();
-if(SET.gasUrl)cloudLoad(false);
+if(SET.gasUrl){hdrStat('📋 시트 확인 중…');cloudLoad(false).then(()=>{
+  if(!loadedOk)toast('시트를 읽지 못했습니다 · 수정 내용은 이 기기에만 저장됩니다');
+});}
 </script>
 </body>
 </html>
