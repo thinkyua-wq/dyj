@@ -111,10 +111,14 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
 .week .wbtn{position:relative;z-index:2;grid-column:1;margin:0 3px;border-radius:5px;background:#E9E8E3;color:var(--ink2);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;height:19px;border:1px solid var(--line)}
 .week .wbtn:hover{background:var(--teal);border-color:var(--teal);color:#fff}
 .week .wbtn.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.week .sdiv{pointer-events:none;align-self:center;height:0;border-top:1px dashed #D5D2CA;margin:0 6px}
 .week .sband{pointer-events:none;border-radius:6px;margin:0 2px}
 .week .sband.s-trip{background:rgba(158,43,37,.045)}
 .week .sband.s-meet{background:rgba(74,84,94,.05)}
 .week .sband.s-evt{background:rgba(29,78,137,.04)}
+.week .ev.multi{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.45) 0 5px,transparent 5px 10px)}
+.week .emore{font-size:9.5px;font-weight:700;color:var(--mute);background:#EEEDE8;border-radius:4px;margin:0 3px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:1;line-height:1}
+.week .emore:hover{background:var(--teal);color:#fff}
 .week .slab{grid-column:1;font-size:9px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;border-radius:5px;margin:0 3px;line-height:1.1;text-align:center;z-index:1}
 .week .slab.s-trip{background:rgba(158,43,37,.10);color:#8C2620}
 .week .slab.s-meet{background:rgba(74,84,94,.12);color:#3E4750}
@@ -140,6 +144,8 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
 .wk{background:#fff;border-top:3px solid var(--teal);border-bottom:1px solid var(--line);cursor:default}
 .wk .head{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line2);flex-wrap:wrap}
 .wk .head .h{font-size:14.5px;font-weight:700;color:var(--vpc)}
+.wk .head .backable{cursor:pointer;border-radius:5px;padding:2px 5px}
+.wk .head .backable:hover{background:#EDEBE5}
 .wk .head .r{margin-left:auto;display:flex;gap:5px}
 .wk .head .ibtn{height:30px;font-size:12px}
 .stepper{display:inline-flex;align-items:center;gap:0;height:30px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
@@ -522,7 +528,10 @@ function travelBrief(e){
   if(tm)out.push(tm);
   return out.length?' \u00b7 '+out.join(' \u00b7 '):'';
 }
-function isTravel(e){return !!(e.travel&&(e.travel.no||e.travel.from||e.travel.to||e.travel.mode))}
+function isTravel(e){
+  if(e.travel&&(e.travel.no||e.travel.from||e.travel.to||e.travel.mode))return true;
+  return /\(\uc774\ub3d9\)|\u2192|\uc774\ub3d9\)/.test(e.title||'');
+}
 
 function moveMonth(n){cur=new Date(cur.getFullYear(),cur.getMonth()+n,1);selWeek=null;render()}
 function goToday(){const t=new Date();cur=new Date(t.getFullYear(),t.getMonth(),1);selWeek=weekStartOf(TODAY);render()}
@@ -660,20 +669,54 @@ function renderMonth(){
       const hd=isHoliday(ds);h+='<div class="d'+(out?' out':'')+(i===5?' sat':i===6?' sun':'')+'" style="grid-column:'+(i+2)+';grid-row:1;cursor:pointer" title="'+(hd?esc(hd.title):'\ud074\ub9ad: \uc774 \ub0a0\uc9dc \uc120\ud0dd')+'" onclick="pickDay(\''+ds+'\')">'+(ds===TODAY?'<span class="today">'+d.getDate()+'</span>':(hd?'<span class="holc">'+d.getDate()+'</span>':(d.getDate()===1?(d.getMonth()+1)+'/1':d.getDate())))+'<span class="add" onclick="event.stopPropagation();openEvent(null,\''+ds+'\')">+</span></div>';
     }
     // 줄 순서: 출장 → 회의 → 행사 → 휴일
-    const evs=DB.events.filter(e=>visible(e)&&e.type!=='holiday'&&e.start<=we&&e.end>=ws)
+    const isEvt=e=>e.type==='g2event'||e.type==='g3event';
+    const evtList=DB.events.filter(e=>visible(e)&&isEvt(e)&&e.start<=we&&e.end>=ws)
+      .sort((a,b)=>(a.start<b.start?-1:a.start>b.start?1:(b.end>a.end?1:-1)));
+    const evs=DB.events.filter(e=>visible(e)&&e.type!=='holiday'&&!isEvt(e)&&e.start<=we&&e.end>=ws)
       .sort((a,b)=>PRI[a.type]-PRI[b.type]||(a.start<b.start?-1:a.start>b.start?1:(b.end>a.end?1:-1)));
-    let base=0,curPri=-1,lanes=[],secStart=0,secName='';
+    let base=0,curPri=-1,lanes=[],secStart=0,secName='';let over={};
     const secs=[];
+    const MAXL=name=>name==='\ud589\uc0ac'?2:4;
+    function closeSec(){
+      if(!secName)return;
+      const used=Math.min(lanes.length,MAXL(secName));
+      const keys=Object.keys(over);
+      keys.forEach(c=>{h+='<div class="emore" style="grid-column:'+(Number(c)+2)+';grid-row:'+(base+used+2)+'" onclick="event.stopPropagation();openWeek(\''+ws+'\')" title="\ub354 \ubcf4\uae30">+'+over[c]+'</div>'});
+      const addRow=keys.length?1:0;
+      secs.push({name:secName,from:secStart,to:base+used+addRow});
+      base+=used+addRow;
+      lanes=[];over={};
+    }
     evs.forEach(e=>{
       if(PRI[e.type]!==curPri){
-        if(secName){secs.push({name:secName,from:secStart,to:base+lanes.length});base+=1;}  // \uad6c\uc5ed \uc544\ub798 \ube48 \uce78
-        base+=lanes.length;lanes=[];curPri=PRI[e.type];secStart=base;secName=SECT[e.type]||'';
+        if(secName){closeSec();h+='<div class="sdiv" style="grid-column:1/-1;grid-row:'+(base+2)+'"></div>';base+=1;}
+        curPri=PRI[e.type];secStart=base;secName=SECT[e.type]||'';
       }
       const s0=e.start<ws?0:(pd(e.start).getDay()+6)%7,en=e.end>we?6:(pd(e.end).getDay()+6)%7;
       let li=lanes.findIndex(l=>l.every(r=>en<r.s||s0>r.e));if(li<0){lanes.push([]);li=lanes.length-1}lanes[li].push({s:s0,e:en});
+      if(li>=MAXL(secName)){for(let c=s0;c<=en;c++)over[c]=(over[c]||0)+1;return}
       h+='<div class="ev '+e.type+'" style="grid-column:'+(s0+2)+'/'+(en+3)+';grid-row:'+(base+li+2)+'" onclick="event.stopPropagation();openEvent(\''+e.id+'\')" title="'+esc(TYPE_NAME[e.type]+' \u00b7 '+e.title)+'">'+(isTravel(e)?'<span class="m">\u2708</span>':'')+(e.allDay===false&&e.startTime?'<span class="m">'+hhmm(e.startTime)+'</span>':'')+esc(e.title)+(isTravel(e)?'<span class="tinfo">'+esc(travelBrief(e))+'</span>':'')+'</div>';
     });
-    if(secName)secs.push({name:secName,from:secStart,to:base+lanes.length});
+    closeSec();
+    // \ud589\uc0ac: \ud55c \uc904\ub85c \ubcd1\ud569 \ud45c\uc2dc
+    if(evtList.length){
+      h+='<div class="sdiv" style="grid-column:1/-1;grid-row:'+(base+2)+'"></div>';base+=1;
+      const perDay=[];
+      for(let i=0;i<7;i++){const ds=addD(ws,i);perDay.push(evtList.filter(e=>e.start<=ds&&e.end>=ds))}
+      let i=0;
+      while(i<7){
+        if(!perDay[i].length){i++;continue}
+        const sig=perDay[i].map(e=>e.id).join(',');
+        let j=i;
+        while(j+1<7&&perDay[j+1].map(e=>e.id).join(',')===sig)j++;
+        const list=perDay[i],first=list[0];
+        const label=list.length===1?first.title:('\ud589\uc0ac '+list.length+'\uac74 \u00b7 '+first.title);
+        h+='<div class="ev '+first.type+(list.length>1?' multi':'')+'" style="grid-column:'+(i+2)+'/'+(j+3)+';grid-row:'+(base+2)+'" onclick="event.stopPropagation();'+(list.length===1?'openEvent(\''+first.id+'\')':'openWeek(\''+ws+'\')')+'" title="'+esc(list.map(e=>e.title).join('\n'))+'">'+esc(label)+'</div>';
+        i=j+1;
+      }
+      secs.push({name:'\ud589\uc0ac',from:base,to:base+1});
+      base+=1;
+    }
     secs.forEach((sc,si)=>{if(sc.to<=sc.from)return;
       h+='<div class="sband s-'+(sc.name==='\ucd9c\uc7a5'?'trip':sc.name==='\ud68c\uc758'?'meet':'evt')+'" style="grid-column:1/-1;grid-row:'+(sc.from+2)+'/'+(sc.to+2)+'"></div>';
       h+='<div class="slab s-'+(sc.name==='\ucd9c\uc7a5'?'trip':sc.name==='\ud68c\uc758'?'meet':'evt')+'" style="grid-row:'+(sc.from+2)+'/'+(sc.to+2)+'">'+sc.name+'</div>';
@@ -730,7 +773,7 @@ function renderWeek(ws){
   }
   function rowHtml(label,items){
     const nl=packRow(items);
-    let r='<div class="rowS"><div class="lab" style="grid-row:1/'+(nl+1)+'">'+label+'</div>';
+    let r='<div class="rowS"'+(label==='\uc774\ub3d9'?' onclick="if(event.target===this||event.target.classList.contains(\'cellbg\')||event.target.classList.contains(\'lab\'))backToMonth()" style="cursor:pointer"':'')+'><div class="lab" style="grid-row:1/'+(nl+1)+'">'+label+'</div>';
     for(let c=0;c<nd;c++)r+='<div class="cellbg" style="grid-column:'+(c+2)+';grid-row:1/'+(nl+1)+'"></div>';
     items.forEach(it=>{
       const e=it.e,t=e.travel||{};
@@ -757,7 +800,7 @@ function renderWeek(ws){
       if(isTravel(e)){tripItems.push({e,si:c.si,ei:c.ei,h:1,card:true});return}
       // \ucd9c\uc7a5\u00b7\ud68c\uc758\ub294 \ub0a0\uc9dc\ubcc4 \uce78\uc73c\ub85c
     });
-  let h='<div class="wk" onclick="event.stopPropagation()"><div class="head"><span class="h">'+(nd===1?d0.replace(/-/g,'.')+' ('+dn[pd(d0).getDay()]+')':(nd<7?d0.slice(5).replace('-','.')+'('+dn[pd(d0).getDay()]+') ~ '+dl.slice(5).replace('-','.')+'('+dn[pd(dl).getDay()]+')':'\uc8fc\uac04 \u00b7 '+d0.slice(5).replace('-','.')+'('+dn[pd(d0).getDay()]+') ~ '+dl.slice(5).replace('-','.')+'('+dn[pd(dl).getDay()]+')'))+'</span><span style="font-size:11px;color:var(--mute)">\uc67c\ucabd=\ubd80\uc0ac\uc7a5\ub2d8 \uc77c\uc815 \u00b7 \uc624\ub978\ucabd=G2/G3 \ud68c\uc758 \u00b7 \ube48 \uce78 \ud074\ub9ad \uc785\ub825</span><span class="r"><button class="ibtn" onclick="moveWeek(-1)">\u25c0 \uc774\uc804</button><span class="stepper"><button onclick="setWkDays(wkDays-1)" title="\uc77c\uc218 \uc904\uc774\uae30">\u2212</button><input type="number" min="1" max="7" value="'+wkDays+'" onchange="setWkDays(this.value)" onclick="event.stopPropagation()"><span class="u">\uc77c</span><button onclick="setWkDays(wkDays+1)" title="\uc77c\uc218 \ub298\ub9ac\uae30">\uff0b</button></span><button class="ibtn" onclick="moveWeek(1)">\ub2e4\uc74c \u25b6</button><button class="ibtn" onclick="exportWeekImage()">\uc774\ubbf8\uc9c0</button><button class="ibtn" onclick="wkOpen=false;syncWkBtn();renderMonth()">\ub2eb\uae30 \u00d7</button></span></div>';
+  let h='<div class="wk" onclick="event.stopPropagation()"><div class="head"><span class="h backable" onclick="backToMonth()" title="\ud074\ub9ad: \uc6d4\uac04\uc73c\ub85c \ub3cc\uc544\uac00\uae30">'+(nd===1?d0.replace(/-/g,'.')+' ('+dn[pd(d0).getDay()]+')':(nd<7?d0.slice(5).replace('-','.')+'('+dn[pd(d0).getDay()]+') ~ '+dl.slice(5).replace('-','.')+'('+dn[pd(dl).getDay()]+')':'\uc8fc\uac04 \u00b7 '+d0.slice(5).replace('-','.')+'('+dn[pd(d0).getDay()]+') ~ '+dl.slice(5).replace('-','.')+'('+dn[pd(dl).getDay()]+')'))+'</span><span class="backable" style="font-size:11px;color:var(--mute)" onclick="backToMonth()" title="\ud074\ub9ad: \uc6d4\uac04\uc73c\ub85c \ub3cc\uc544\uac00\uae30">\uc67c\ucabd=\ubd80\uc0ac\uc7a5\ub2d8 \uc77c\uc815 \u00b7 \uc624\ub978\ucabd=G2/G3 \ud68c\uc758 \u00b7 \ube48 \uce78 \ud074\ub9ad \uc785\ub825</span><span class="r"><button class="ibtn" onclick="moveWeek(-1)">\u25c0 \uc774\uc804</button><span class="stepper"><button onclick="setWkDays(wkDays-1)" title="\uc77c\uc218 \uc904\uc774\uae30">\u2212</button><input type="number" min="1" max="7" value="'+wkDays+'" onchange="setWkDays(this.value)" onclick="event.stopPropagation()"><span class="u">\uc77c</span><button onclick="setWkDays(wkDays+1)" title="\uc77c\uc218 \ub298\ub9ac\uae30">\uff0b</button></span><button class="ibtn" onclick="moveWeek(1)">\ub2e4\uc74c \u25b6</button><button class="ibtn" onclick="exportWeekImage()">\uc774\ubbf8\uc9c0</button><button class="ibtn" onclick="wkOpen=false;syncWkBtn();renderMonth()">\ub2eb\uae30 \u00d7</button></span></div>';
   const COLS=(nd<7?'56px repeat('+nd+',minmax(0,1fr))':'56px repeat(5,minmax(0,1fr)) repeat(2,minmax(0,0.55fr))');
   h+='<div class="wkwrap"><div class="wkin" style="--nd:'+nd+';--nr:'+nr+';--cols:'+COLS+'">';
   h+=rowHtml('\uc774\ub3d9',tripItems);
@@ -780,10 +823,6 @@ function renderWeek(ws){
       h+='</div>'});
     h+='</div>';
   }
-  // \ube48 \uce78 (\uc885\uc77c \uc77c\uc815 \ucd94\uac00\uc6a9)
-  h+='<div class="wkgrid rowB"><div class="lab"></div>';
-  days.forEach(d=>{h+='<div title="\ud074\ub9ad: \uc885\uc77c \uc77c\uc815 \ucd94\uac00" onclick="openEvent(null,\''+d+'\')"></div>'});
-  h+='</div>';
   // \uc2dc\uac04 \uadf8\ub9ac\ub4dc
   h+='<div class="timegrid">';
   for(let r=0;r<nr;r++){const hr=H0+Math.floor(r/2),half=r%2;const lab=r===nr-1?'\uc57c\uac04':(half?'':hr+':00');h+='<div class="tl'+((hr===12||hr===18)&&!half?' h':'')+'" style="grid-row:'+(r+1)+'">'+lab+'</div>'}
