@@ -853,7 +853,7 @@ function renderWeek(ws){
     [[vpc,1],[tmc,wk2?1:2]].forEach(pair=>{
       const arr=pair[0],col=pair[1],lanes=[];
       arr.forEach(x=>{let li=lanes.findIndex(l=>l.every(o=>x.r1<=o.r0||x.r0>=o.r1));if(li<0){lanes.push([]);li=lanes.length-1}lanes[li].push(x);
-        h+='<div class="tev '+x.e.type+'" style="grid-column:'+col+';grid-row:'+(x.r0+1)+'/'+(x.r1+1)+'" onclick="event.stopPropagation();openEvent(\''+x.e.id+'\')">'+esc(x.e.title)+(x.e.startTime?'<span class="th">'+hhmm(x.e.startTime)+(x.e.endTime?'~'+hhmm(x.e.endTime):'')+'</span>':'')+'</div>'});
+        h+='<div class="tev '+x.e.type+'" style="grid-column:'+col+';grid-row:'+(x.r0+1)+'/'+(x.r1+1)+'" onclick="event.stopPropagation();openEvent(\''+x.e.id+'\')">'+esc(x.e.title)+(x.e.startTime?'<span class="th">'+hhmm(x.e.startTime)+(x.e.endTime?'~':'')+'</span>'+(x.e.endTime?'<span class="th">'+hhmm(x.e.endTime)+'</span>':''):'')+'</div>'});
     });
     h+='<div class="mid"></div>';
     h+='</div>'});
