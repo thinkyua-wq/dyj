@@ -455,7 +455,8 @@ const SEED_VER='2026-09-24b';
 const LS_KEY='g2g3_schedule_v2', LS_OLD='g2g3_schedule_v1', LS_SET='g2g3_settings_v1';
 const TYPE_NAME={g2trip:'G2 출장',g3trip:'G3 출장',g2meet:'G2 회의',g3meet:'G3 회의',g2event:'G2 행사',g3event:'G3 행사',personal:'개인일정',holiday:'휴일'};
 let DB={events:[],notes:{},updatedAt:''};
-let SET={gasUrl:'',autoCloud:true,weekend:false,h0:8,h1:21};
+const DEFAULT_GAS='https://script.google.com/macros/s/AKfycbxrrEncYB5OZ3vvSQ268b5OU3R7zUFT5i1Lp_9tvhZt8_m7ZJ073yNGuZxK7yYJH51S3g/exec';
+let SET={gasUrl:DEFAULT_GAS,autoCloud:true,weekend:false,h0:8,h1:21};
 let F={g2trip:true,g3trip:true,g2meet:true,g3meet:true,g2event:true,g3event:true,personal:true};
 let cur=new Date(); cur=new Date(cur.getFullYear(),cur.getMonth(),1);
 let selWeek=null, view='month', editing=null, editAtt=[], editVp=true;
@@ -484,6 +485,7 @@ function migrateOld(old){ // v1(status/targets) → v2(type/vp)
 }
 function load(){
   try{const s=localStorage.getItem(LS_SET);if(s)SET=Object.assign(SET,JSON.parse(s))}catch(e){}
+  if(!SET.gasUrl)SET.gasUrl=DEFAULT_GAS;
   try{const d0=JSON.parse(localStorage.getItem(LS_KEY)||'null');
     if(d0&&d0.seedVer!==SEED_VER&&SET.gasUrl){localStorage.removeItem(LS_KEY)}   // 시트에서 새로 받기
   }catch(e){}
@@ -570,7 +572,7 @@ function setZoom(n){yZoom=Math.max(-2,Math.min(2,yZoom+n));renderYear()}
 function allMonths(v){for(let i=1;i<=12;i++)yMonths[i]=v;renderYear()}
 function moveYear(n){yYear+=n;renderYear()}
 function jumpMonth(y,m){cur=new Date(y,m-1,1);selWeek=null;setTab('month')}
-function jumpDay(ds){closeMiniCal();wkOpen=true;const d=pd(ds);cur=new Date(d.getFullYear(),d.getMonth(),1);selWeek=weekStartOf(ds);selDay=ds;setTab('month');syncWkBtn()}
+function jumpDay(ds){closeMiniCal();wkOpen=true;wkDays=7;const d=pd(ds);cur=new Date(d.getFullYear(),d.getMonth(),1);selWeek=weekStartOf(ds);selDay=ds;setTab('month');syncWkBtn()}
 function renderYear(){
   const sel=[];for(let i=1;i<=12;i++)if(yMonths[i])sel.push(i);
   const cnt={};DB.events.forEach(e=>{if(e.start.slice(0,4)!==String(yYear))return;const mm=Number(e.start.slice(5,7));cnt[mm]=(cnt[mm]||0)+1});
@@ -740,8 +742,9 @@ function renderMonth(){
 function backToMonth(){wkOpen=false;renderMonth();renderSide();window.scrollTo({top:0,behavior:'smooth'})}
 function openWeek(ws){
   if(wkOpen&&selWeek===ws){wkOpen=false}
-  else{wkOpen=true;selWeek=ws;
-    selDay=(TODAY>=ws&&TODAY<=addD(ws,6))?TODAY:ws;}
+  else{wkOpen=true;selWeek=ws;wkDays=7;
+    selDay=(TODAY>=ws&&TODAY<=addD(ws,6))?TODAY:ws;
+    localStorage.setItem(LS_SET,JSON.stringify(Object.assign(SET,{wkDays:7})));}
   renderMonth();renderSide();
 }
 function syncWkBtn(){}
@@ -1012,6 +1015,10 @@ async function addImage(f){
       item.fileId=res.fileId;item.link=res.url;
       item.url='https://drive.google.com/thumbnail?id='+res.fileId+'&sz=w1200';
       delete item.pending;renderAtt();toast('\ub4dc\ub77c\uc774\ube0c \uc5c5\ub85c\ub4dc \uc644\ub8cc');
+      if(editing){                                   // \uc800\uc7a5\ub41c \uc77c\uc815\uc774\uba74 \uc990\uc2dc \uc2dc\ud2b8\uc5d0 \ubc18\uc601
+        const tgt=DB.events.find(x=>x.id===editing.id);
+        if(tgt){tgt.attachments=JSON.parse(JSON.stringify(editAtt));persist()}
+      }
     }else{delete item.pending;renderAtt();toast('\uc5c5\ub85c\ub4dc \uc2e4\ud328 \u00b7 \uc774\ubbf8\uc9c0\ub294 \uc571\uc5d0\ub9cc \uc800\uc7a5\ub429\ub2c8\ub2e4')}
   }catch(e){delete item.pending;renderAtt();toast('\uc5c5\ub85c\ub4dc \uc2e4\ud328 \u00b7 \uc571\uc5d0\ub9cc \uc800\uc7a5')}
 }
@@ -1061,6 +1068,10 @@ function buildRepeat(base,freq,until){
   return out.map(st=>Object.assign(JSON.parse(JSON.stringify(base)),{id:uid(),start:st,end:addD(st,span)}));
 }
 function saveEvent(){
+  if(editAtt.some(a=>a.pending)){
+    toast('\uc774\ubbf8\uc9c0 \uc5c5\ub85c\ub4dc \uc911\u2026 \uc644\ub8cc \ud6c4 \uc790\ub3d9 \uc800\uc7a5\ub429\ub2c8\ub2e4');
+    clearTimeout(window._svT);window._svT=setTimeout(saveEvent,1200);return;
+  }
   const title=g('e_title').trim();if(!title){toast('제목을 입력하세요');return}
   let s=g('e_start'),en=g('e_end')||s;if(!s){toast('시작일을 입력하세요');return}if(en<s)en=s;
   const obj={id:editing?editing.id:uid(),title,start:s,end:en,allDay:g('e_allday')==='1',startTime:g('e_st'),endTime:g('e_et'),type:g('e_type'),vp:(g('e_type')==='g2meet'||g('e_type')==='g3meet')?false:true,region:g('e_region').trim(),memo:g('e_memo'),travel:collectTravel(),attachments:editAtt};
@@ -1074,7 +1085,9 @@ function saveEvent(){
     list.forEach(x=>{x.series=obj.series});
     DB.events.push(...list);made=list.length;
   }
-  persist();closeEvent();render();toast(made?'저장됨 · 반복 '+made+'건 생성':'저장됨');
+  const onlyLocal=editAtt.filter(a=>!a.fileId).length;
+  persist();closeEvent();render();
+  toast(made?('저장됨 · 반복 '+made+'건 생성'):(onlyLocal?'저장됨 · 이미지 '+onlyLocal+'장은 이 기기에만 저장됨':'저장됨'));
 }
 function deleteEvent(){if(!editing)return;
   const ser=editing.series;
@@ -1164,7 +1177,7 @@ function resetSeed(){if(!confirm('엑셀(2026.09.08 updated) 기준 초기 일�
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})})}
 load();
 selWeek=null;
-if(SET.wkDays)wkDays=Math.max(1,Math.min(7,Number(SET.wkDays)||7));
+wkDays=7;
 selDay=TODAY;
 render();syncWkBtn();
 if(SET.gasUrl){hdrStat('📋 시트 확인 중…');cloudLoad(false).then(()=>{
