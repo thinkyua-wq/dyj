@@ -121,11 +121,11 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
 .week .ev.lay1.g3event{background:#6E8FBE;color:#fff}
 .week .ev.lay1.g2trip{background:#7E2721;color:#fff}
 .week .ev.lay1.g3trip{background:#173E6E;color:#fff}
-.ev.g2trip.mv{background:#6E1B16}
-.ev.g3trip.mv{background:#122F55}
-.tev.g2trip.mv{background:#6E1B16} .tev.g3trip.mv{background:#122F55}
+.ev.g2trip.mv{background:#4A0F0B}
+.ev.g3trip.mv{background:#0B1E39}
+.tev.g2trip.mv{background:#4A0F0B} .tev.g3trip.mv{background:#0B1E39}
 .tcard.one{border-width:2px}
-.ymon .yev.g2trip.mv{background:#6E1B16} .ymon .yev.g3trip.mv{background:#122F55}
+.ymon .yev.g2trip.mv{background:#4A0F0B} .ymon .yev.g3trip.mv{background:#0B1E39}
 .week .evmore{justify-self:end;align-self:center;z-index:2;font-size:9px;font-weight:800;color:#fff;background:var(--ink2);border-radius:9px;padding:1px 6px;margin-right:5px;cursor:pointer;line-height:1.4}
 .week .evmore:hover{background:var(--teal)}
 .week .emore{font-size:9.5px;font-weight:700;color:var(--mute);background:#EEEDE8;border-radius:4px;margin:0 3px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:1;line-height:1}
@@ -414,6 +414,9 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink)}
             <div class="f"><label for="tr_fromTime">출발 시각</label><input id="tr_fromTime" type="time" step="300"></div>
             <div class="f"><label for="tr_to">도착 · 터미널</label><div class="pair"><input id="tr_to" placeholder="LAX"><input id="tr_termTo" placeholder="B" class="tm"></div></div>
             <div class="f"><label for="tr_toTime">도착 시각</label><input id="tr_toTime" type="time" step="300"></div>
+            <div class="f" style="grid-column:1/-1"><label for="tr_hotel">호텔</label><input id="tr_hotel" placeholder="호텔명 · 주소 · 예약번호"></div>
+            <div class="f"><label for="tr_hin">체크인</label><input id="tr_hin" type="date"></div>
+            <div class="f"><label for="tr_hout">체크아웃</label><input id="tr_hout" type="date"></div>
           </div>
         </div>
       </div>
@@ -540,6 +543,13 @@ function visible(e){
   return !!F[e.type];
 }
 function isHoliday(ds){return DB.events.find(e=>e.type==='holiday'&&e.start<=ds&&e.end>=ds)}
+function mvIcon(e){
+  const m=((e.travel||{}).mode)||'';
+  if(/\uae30\ucc28|KTX|\uace0\uc18d\ucca0/.test(m))return '\ud83d\ude84';      // 기차
+  if(/\ucc28\ub7c9/.test(m))return '\ud83d\ude98';                          // 차량
+  if(/\uae30\ud0c0/.test(m))return '';                                   // 기타
+  return '\u2708';                                                    // 항공(기본)
+}
 function travelBrief(e){
   const t=e.travel||{};
   const out=[];
@@ -548,6 +558,7 @@ function travelBrief(e){
   if(t.no)out.push(t.no);
   const tm=[t.terminal,t.terminalTo].filter(Boolean).join('/');
   if(tm)out.push(tm);
+  if(t.hotel)out.push('\ud83c\udfe8 '+t.hotel);
   return out.length?' \u00b7 '+out.join(' \u00b7 '):'';
 }
 function isTravel(e){
@@ -718,7 +729,7 @@ function renderMonth(){
       const s0=e.start<ws?0:(pd(e.start).getDay()+6)%7,en=e.end>we?6:(pd(e.end).getDay()+6)%7;
       let li=lanes.findIndex(l=>l.every(r=>en<r.s||s0>r.e));if(li<0){lanes.push([]);li=lanes.length-1}lanes[li].push({s:s0,e:en});
       if(li>=MAXL(secName)){for(let c=s0;c<=en;c++)over[c]=(over[c]||0)+1;return}
-      h+='<div class="ev '+e.type+(isTravel(e)?' mv':'')+'" style="grid-column:'+(s0+2)+'/'+(en+3)+';grid-row:'+(base+li+2)+'" onclick="event.stopPropagation();openEvent(\''+e.id+'\')" title="'+esc(TYPE_NAME[e.type]+' \u00b7 '+e.title)+'">'+(isTravel(e)?'<span class="m">\u2708</span>':'')+(e.allDay===false&&e.startTime?'<span class="m">'+hhmm(e.startTime)+'</span>':'')+esc(e.title)+(isTravel(e)?'<span class="tinfo">'+esc(travelBrief(e))+'</span>':'')+'</div>';
+      h+='<div class="ev '+e.type+(isTravel(e)?' mv':'')+'" style="grid-column:'+(s0+2)+'/'+(en+3)+';grid-row:'+(base+li+2)+'" onclick="event.stopPropagation();openEvent(\''+e.id+'\')" title="'+esc(TYPE_NAME[e.type]+' \u00b7 '+e.title)+'">'+(isTravel(e)&&mvIcon(e)?'<span class="m">'+mvIcon(e)+'</span>':'')+(e.allDay===false&&e.startTime?'<span class="m">'+hhmm(e.startTime)+'</span>':'')+esc(e.title)+(isTravel(e)?'<span class="tinfo">'+esc(travelBrief(e))+'</span>':'')+'</div>';
     });
     closeSec();
     // \ud589\uc0ac: \ud55c \uc904 \uc720\uc9c0 \u00b7 \ub9c9\ub300\ub294 \uc790\ub974\uc9c0 \uc54a\uc74c
@@ -807,8 +818,9 @@ function renderWeek(ws){
         const seg=(t.from||t.to)?((t.from||'?')+tf+' \u2192 '+(t.to||'?')+tt2):e.title;
         const det=[t.mode||'\ud56d\uacf5', t.no||'[\ud3b8\uba85]',
           t.fromTime?'\ucd9c '+hhmm(t.fromTime):(t.toTime?'':'[\uc2dc\uac04]'),
-          t.toTime?'\ub3c4 '+hhmm(t.toTime):''].filter(Boolean).join(' \u00b7 ');
-        r+='<div class="tcard one" style="grid-column:'+(it.si+2)+'/'+(it.ei+3)+';grid-row:'+(it.li+1)+'" onclick="openEvent(\''+e.id+'\')" title="'+esc(seg+' / '+det)+'"><b>\u2708 '+esc(seg)+'</b><span class="dt">'+esc(det)+'</span>'+((e.attachments||[]).length?'<span>\ud83d\udcce</span>':'')+'</div>';
+          t.toTime?'\ub3c4 '+hhmm(t.toTime):'',
+          t.hotel?'\ud83c\udfe8 '+t.hotel:''].filter(Boolean).join(' \u00b7 ');
+        r+='<div class="tcard one" style="grid-column:'+(it.si+2)+'/'+(it.ei+3)+';grid-row:'+(it.li+1)+'" onclick="openEvent(\''+e.id+'\')" title="'+esc(seg+' / '+det)+'"><b>'+(mvIcon(e)?mvIcon(e)+' ':'')+esc(seg)+'</b><span class="dt">'+esc(det)+'</span>'+((e.attachments||[]).length?'<span>\ud83d\udcce</span>':'')+'</div>';
       }else{
         r+='<div class="ev '+e.type+'" style="grid-column:'+(it.si+2)+'/'+(it.ei+3)+';grid-row:'+(it.li+1)+'" onclick="openEvent(\''+e.id+'\')" title="'+esc(TYPE_NAME[e.type]+' \u00b7 '+e.title)+'">'+esc(e.title)+'</div>';
       }
@@ -943,7 +955,7 @@ function openEvent(id,date,st0,et0,typ0,vp0){
   v('e_title',e.title);v('e_start',e.start);v('e_end',e.end);v('e_allday',e.allDay===false?'0':'1');v('e_st',e.startTime||'');v('e_et',e.endTime||'');
   v('e_type',e.type||'g2trip');v('e_region',e.region||'');v('e_memo',e.memo||'');
   editVp=(e.vp!==false);
-  const t=e.travel||{};v('tr_mode',t.mode||'항공');v('tr_no',t.no||'');v('tr_from',t.from||'');v('tr_fromTime',t.fromTime||'');v('tr_to',t.to||'');v('tr_toTime',t.toTime||'');v('tr_term',t.terminal||'');v('tr_termTo',t.terminalTo||'');
+  const t=e.travel||{};v('tr_mode',t.mode||'항공');v('tr_no',t.no||'');v('tr_from',t.from||'');v('tr_fromTime',t.fromTime||'');v('tr_to',t.to||'');v('tr_toTime',t.toTime||'');v('tr_term',t.terminal||'');v('tr_termTo',t.terminalTo||'');v('tr_hotel',t.hotel||'');v('tr_hin',t.hotelIn||'');v('tr_hout',t.hotelOut||'');
 editAtt=JSON.parse(JSON.stringify(e.attachments||[]));renderAtt();
   setTravelOpen(isTravel(e)||editAtt.length>0);
   v('e_rep','none');v('e_until',addD(e.start,90));syncRep();
@@ -1057,8 +1069,8 @@ async function uploadAtt(files){
   const el=document.getElementById('attFile');if(el)el.value='';
 }
 function collectTravel(){
-  const t={mode:g('tr_mode'),no:g('tr_no').trim(),from:g('tr_from').trim(),fromTime:g('tr_fromTime'),to:g('tr_to').trim(),toTime:g('tr_toTime'),terminal:g('tr_term').trim(),terminalTo:g('tr_termTo').trim(),pnr:''};
-  return (t.no||t.from||t.to||t.fromTime||t.toTime||t.terminal||t.terminalTo)?t:{};
+  const t={mode:g('tr_mode'),no:g('tr_no').trim(),from:g('tr_from').trim(),fromTime:g('tr_fromTime'),to:g('tr_to').trim(),toTime:g('tr_toTime'),terminal:g('tr_term').trim(),terminalTo:g('tr_termTo').trim(),hotel:g('tr_hotel').trim(),hotelIn:g('tr_hin'),hotelOut:g('tr_hout'),pnr:''};
+  return (t.no||t.from||t.to||t.fromTime||t.toTime||t.terminal||t.terminalTo||t.hotel)?t:{};
 }
 function autoGrow(el){el.style.height='auto';el.style.height=Math.max(80,el.scrollHeight+4)+'px'}
 function syncRep(){document.getElementById('repUntil').style.display=g('e_rep')==='none'?'none':''}
