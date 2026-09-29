@@ -1168,6 +1168,19 @@ async function cloudSave(manual){
       if(!go){hdrStat('');toast('저장을 취소했습니다 · ⬇ 로 먼저 불러오세요');return}
     }
   }catch(e){}
+  // 소량 삭제도 확인
+  try{
+    const prev=await gas({action:'load'});
+    if(prev&&prev.ok&&prev.data&&prev.data.events){
+      const mine=new Set(DB.events.map(e=>e.id));
+      const gone=prev.data.events.filter(e=>!mine.has(e.id));
+      if(gone.length){
+        const list=gone.slice(0,6).map(e=>'\u00b7 '+e.start+' '+e.title).join('\n');
+        const go=confirm('\uc774 \uc800\uc7a5\uc73c\ub85c \uc77c\uc815 '+gone.length+'\uac74\uc774 \uc0ac\ub77c\uc9d1\ub2c8\ub2e4.\n\n'+list+(gone.length>6?'\n\u00b7 \uc678 '+(gone.length-6)+'\uac74':'')+'\n\n\uacc4\uc18d\ud560\uae4c\uc694?\n[\ucde8\uc18c]\ub97c \ub204\ub974\uba74 \uc2dc\ud2b8 \ub0b4\uc6a9\uc744 \uadf8\ub300\ub85c \ub460\ub2c8\ub2e4.');
+        if(!go){hdrStat('');toast('\uc800\uc7a5\uc744 \ucde8\uc18c\ud588\uc2b5\ub2c8\ub2e4');return}
+      }
+    }
+  }catch(e){}
   hdrStat('📋 시트 저장 중…');
   try{const r=await gas({action:'save',data:sheetSafe(DB)});keepSheetUrl(r);if(r&&r.blocked){hdrStat('');toast('시트 보호: '+(r.msg||'대량 삭제 차단'));if(manual)slog(r.msg||'');return}if(r.ok){hdrStat();refreshAll();if(manual){slog('저장 완료');toast('구글시트에 저장했습니다')}}else{hdrStat('📋 시트 저장 실패');slog('저장 실패: '+(r.error||''))}}catch(e){hdrStat('📋 시트 저장 실패');if(manual)slog('저장 실패: '+e.message)}
 }
@@ -1177,6 +1190,7 @@ async function cloudLoad(manual){
     if(manual&&DB.updatedAt&&r.data.updatedAt&&r.data.updatedAt<DB.updatedAt&&!confirm('클라우드 데이터('+r.data.updatedAt.slice(0,16)+')가 이 기기('+DB.updatedAt.slice(0,16)+')보다 오래됐습니다. 그래도 덮어쓸까요?'))return;
     DB=migrateOld(r.data);if(!DB.notes)DB.notes={};DB.seedVer=SEED_VER;
     loadedOk=true;
+    setTimeout(()=>toast('\uc2dc\ud2b8 \ub3d9\uae30\ud654 \u00b7 '+(r.data.events||[]).length+'\uac74'),400);
     DB.events.forEach(e=>{(e.attachments||[]).forEach(a=>{
       const m=(a.url||'').match(/[?&]id=([\w-]+)/);if(m)a.fileId=m[1];})});localStorage.setItem(LS_KEY,JSON.stringify(DB));render();if(manual){slog('불러오기 완료 · '+DB.events.length+'건');toast('구글시트에서 불러왔습니다')}
   }else{if(r.ok)loadedOk=true;if(manual)slog(r.ok?'클라우드에 데이터가 없습니다':'실패: '+(r.error||''))}}catch(e){if(manual)slog('불러오기 실패: '+e.message)}
